@@ -3,7 +3,7 @@
     as possible.
  *)
 
-class Main {
-  main():Int { 0 };
+class Main inherits IO{
+  main():Int {  { self.out_string("hello world"); 0; } };
 };
 
