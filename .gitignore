@@ -8,3 +8,5 @@ a.out
 mysemant
 semant
 symtab_example
+*.s
+cgen
