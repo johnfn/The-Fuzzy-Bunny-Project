@@ -1,2 +1,10 @@
 *.d
 *.o
+*.swp
+.~
+thumbs.db
+*.lib
+a.out
+mysemant
+semant
+symtab_example
