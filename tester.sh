@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 
-for f in working/*
+for f in examples/*
 do
   amt=$(($amt+1))
 

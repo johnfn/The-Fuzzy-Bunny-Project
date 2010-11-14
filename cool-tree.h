@@ -52,6 +52,7 @@ public:
    bool method; 
    virtual Symbol stupid() = 0;
    Symbol name;
+   Symbol type_decl;
 #ifdef Feature_EXTRAS
    Feature_EXTRAS
 #endif
@@ -203,7 +204,6 @@ public:
 // define constructor - attr
 class attr_class : public Feature_class {
 public:
-   Symbol type_decl;
    Expression init;
 public:
    attr_class(Symbol a1, Symbol a2, Expression a3) {
