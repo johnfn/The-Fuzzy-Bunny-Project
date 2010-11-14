@@ -24,6 +24,13 @@
 
 #include "cgen.h"
 #include "cgen_gc.h"
+#include <sstream>
+#include <stack>
+
+using std::stringstream;
+using std::stack;
+
+#define PRINT(x) if (cgen_debug) cout << x << endl
 
 extern void emit_string_constant(ostream& str, char *s);
 extern int cgen_debug;
@@ -619,9 +626,11 @@ void CgenClassTable::code_constants()
 
 CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
 {
-   stringclasstag = 0 /* Change to your String class tag here */;
-   intclasstag =    0 /* Change to your Int class tag here */;
-   boolclasstag =   0 /* Change to your Bool class tag here */;
+   stringclasstag = 3 /* Change to your String class tag here */;
+   intclasstag =    4 /* Change to your Int class tag here */;
+   boolclasstag =   5 /* Change to your Bool class tag here */;
+
+   this->curNumber = 6;
 
    enterscope();
    if (cgen_debug) cout << "Building CgenClassTable" << endl;
@@ -815,7 +824,41 @@ void CgenNode::set_parentnd(CgenNodeP p)
   parentnd = p;
 }
 
+void CgenClassTable::code_dispatch(CgenNodeP obj, vector<string> tbl){
 
+    Features features = obj->features;
+    str << obj->name << "_dispTab:" << endl;
+    ///Loop through the features of a class         
+    for (int i=0;i < features->len(); i++){
+        if (features->nth(i)->method){ 
+            stringstream ss;
+            ss << obj->name << "." << features->nth(i)->name; //TODO change if inherited?
+            if (find(tbl.begin(), tbl.end(), ss.str()) != tbl.end()) continue;
+            tbl.push_back(ss.str());
+        }
+        //Define a method on features that returns name of method 
+    }
+
+    for (int i=0;i < tbl.size() ;i++){
+        str << WORD << tbl[i] << endl;
+    }
+
+    List<CgenNode> *children = obj->get_children();
+
+    if (!children) return; //TODO
+    //this->dispatch_table = tbl;
+
+    stack<CgenNodeP> s;
+
+    for(; children; children = children->tl()){
+        s.push(children->hd());
+    }
+    while(s.size()){ 
+        code_dispatch(s.top(), tbl);
+        s.pop();
+    }
+
+}
 
 void CgenClassTable::code()
 {
@@ -827,7 +870,9 @@ void CgenClassTable::code()
 
   if (cgen_debug) cout << "coding constants" << endl;
   code_constants();
-
+    
+  vector<string> empty;
+  code_dispatch(this->root(), empty);
 //                 Add your code to emit
 //                   - prototype objects
 //                   - class_nameTab

@@ -3,6 +3,11 @@
 #include "emit.h"
 #include "cool-tree.h"
 #include "symtab.h"
+#include <string>
+#include <vector>
+
+using std::vector;
+using std::string;
 
 enum Basicness     {Basic, NotBasic};
 #define TRUE 1
@@ -22,6 +27,7 @@ private:
    int intclasstag;
    int boolclasstag;
 
+   int curNumber;
 
 // The following methods emit code for
 // constants and global declarations.
@@ -32,6 +38,7 @@ private:
    void code_select_gc();
    void code_constants();
 
+    void code_dispatch(CgenNodeP obj, vector<string> tbl);
 // The following creates an inheritance graph from
 // a list of classes.  The graph is implemented as
 // a tree of `CgenNode', and class names are placed
@@ -55,12 +62,14 @@ private:
    List<CgenNode> *children;                  // Children of class
    Basicness basic_status;                    // `Basic' if class is basic
                                               // `NotBasic' otherwise
+   vector<string> functions;
 
 public:
    CgenNode(Class_ c,
             Basicness bstatus,
             CgenClassTableP class_table);
 
+   int yay(){ return 6; } 
    void add_child(CgenNodeP child);
    List<CgenNode> *get_children() { return children; }
    void set_parentnd(CgenNodeP p);

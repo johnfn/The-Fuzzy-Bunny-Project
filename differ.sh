@@ -2,16 +2,31 @@
 
 #add -r as an argument to run it as well.
 
-#add -o to "o"nly run the .s file (not make it from scratch)
-if [ "$1" != '-o' ]
+make cgen
+
+if [ $# = 2 ]
 then
-    rm out.s
-    ./lexer example.cl | ./parser | ./semant | ./cgen_soln > out.s
-    rm us.s
-    ./lexer example.cl | ./parser | ./semant | ./cgen  > us.s
+OPTION=$1
+FILE=$2
 fi
 
-if [ "$1" = "-r" ] 
+if [ $# = 0 ]
+then
+OPTION="random"
+FILE="example.cl"
+fi
+
+if [ $# = 1 ]
+then
+OPTION="random"
+FILE=$1
+fi
+
+rm them.s
+./lexer $FILE | ./parser | ./semant | ./cgen_soln > them.s
+rm us.s
+./lexer example.cl | ./parser | ./semant | ./cgen -c > us.s
+if [ $OPTION = "-r" ] 
 then
     /usr/class/cs143/bin/spim -file out.s
 fi

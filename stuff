@@ -1,0 +1,35 @@
+#6
+_program
+  #6
+  _class
+    Main
+    IO
+    "example.cl"
+    (
+    #7
+    _attr
+      a
+      Int
+      #7
+      _int
+        5
+      : Int
+    #8
+    _method
+      main
+      SELF_TYPE
+      #8
+      _dispatch
+        #8
+        _object
+          self
+        : SELF_TYPE
+        out_string
+        (
+        #8
+        _string
+          "hello world"
+        : String
+        )
+      : SELF_TYPE
+    )
