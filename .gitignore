@@ -1,6 +1,8 @@
 *.d
 *.o
 *.swp
+them.s.swo
+us.s.swo
 .~
 thumbs.db
 *.lib

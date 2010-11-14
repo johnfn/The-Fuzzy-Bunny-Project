@@ -407,12 +407,11 @@ void StringEntry::code_def(ostream& s, int stringclasstag)
   code_ref(s);  s  << LABEL                                             // label
       << WORD << stringclasstag << endl                                 // tag
       << WORD << (DEFAULT_OBJFIELDS + STRING_SLOTS + (len+4)/4) << endl // size
-      << WORD;
+      << WORD << STRINGNAME << DISPTAB_SUFFIX << endl;              //dispatch table
 
 
  /***** Add dispatch information for class String ******/
 
-      s << endl;                                              // dispatch table
       s << WORD;  lensym->code_ref(s);  s << endl;            // string length
   emit_string_constant(s,str);                                // ascii string
   s << ALIGN;                                                 // align to word
@@ -450,11 +449,7 @@ void IntEntry::code_def(ostream &s, int intclasstag)
   code_ref(s);  s << LABEL                                // label
       << WORD << intclasstag << endl                      // class tag
       << WORD << (DEFAULT_OBJFIELDS + INT_SLOTS) << endl  // object size
-      << WORD; 
-
- /***** Add dispatch information for class Int ******/
-
-      s << endl;                                          // dispatch table
+      << WORD << INTNAME << DISPTAB_SUFFIX << endl;              //dispatch table
       s << WORD << str << endl;                           // integer value
 }
 
@@ -627,9 +622,9 @@ void CgenClassTable::code_constants()
 
 CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
 {
-   stringclasstag = 3 /* Change to your String class tag here */;
-   intclasstag =    4 /* Change to your Int class tag here */;
-   boolclasstag =   5 /* Change to your Bool class tag here */;
+   stringclasstag = 5 /* Change to your String class tag here */;
+   intclasstag =    3 /* Change to your Int class tag here */;
+   boolclasstag =   4 /* Change to your Bool class tag here */;
 
    this->curNumber = 6;
 
@@ -827,7 +822,23 @@ void CgenNode::set_parentnd(CgenNodeP p)
   parentnd = p;
 }
 
+void CgenClassTable::code_nameTab(CgenNodeP obj){
 
+    str << WORD;
+    stringtable.lookup_string(obj->name->get_string())->code_ref(str);
+    str << endl;
+
+    List<CgenNode> *children = obj->get_children();
+
+    if (!children) return; //TODO
+
+    //stack<CgenNodeP> s;
+
+    for(; children; children = children->tl()){
+        //s.push(children->hd());
+        code_nameTab(children->hd());
+    }
+}
                                                         //pair< class, method > 
 void CgenClassTable::code_objTab(CgenNodeP obj){
 
@@ -867,11 +878,11 @@ void CgenClassTable::code_proto(CgenNodeP obj, vector<string> attrTbl){
         }
     }
     
-    objSize += attrTbl.size();
+    objSize += (int)attrTbl.size();
     str << WORD << objSize << endl;
     str << WORD << obj->name << "_dispTab" << endl;
     
-    for(int i=0;i<attrTbl.size();i++){
+    for(int i=0;i<(int)attrTbl.size();i++){
 
         /*
          * 
@@ -937,9 +948,9 @@ void CgenClassTable::code_dispatch(CgenNodeP obj, vector<pair<string, string> > 
             ssobj << obj->name;
             ssnm << features->nth(i)->name; //TODO change if inherited?
             int j;
-            for (j=0;j < tbl.size(); j++) if ( tbl[j].second == ssnm.str()) break;
+            for (j=0;j < (int)tbl.size(); j++) if ( tbl[j].second == ssnm.str()) break;
             //Method override
-            if (j != tbl.size()){ 
+            if (j != (int)tbl.size()){ 
                 tbl[j].first = ssobj.str();
             }
             else {
@@ -949,7 +960,7 @@ void CgenClassTable::code_dispatch(CgenNodeP obj, vector<pair<string, string> > 
         //Define a method on features that returns name of method 
     }
 
-    for (int i=0;i < tbl.size() ;i++){
+    for (int i=0;i < (int)tbl.size() ;i++){
         str << WORD << tbl[i].first << "." << tbl[i].second << endl;
     }
 
@@ -984,11 +995,16 @@ void CgenClassTable::code()
   vector<pair<string, string> > emptyDispTbl;
   vector<string> emptyAttrTbl;
   
+  str << CLASSNAMETAB << ":" << endl; 
+  code_nameTab(this->root());
+
   str << CLASSOBJTAB << ":" << endl; 
   code_objTab(this->root());
-  
+
+
   code_dispatch(this->root(), emptyDispTbl);
   code_proto(this->root(), emptyAttrTbl);
+
 
 //                 Add your code to emit
 //                   - prototype objects
@@ -1025,6 +1041,10 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
    children(NULL),
    basic_status(bstatus)
 { 
+    PRINT(" adding " << name->get_string());
+    string idname = name->get_string();
+    if (idname == "SELF_TYPE" || idname == "_no_class" || idname == "_prim_slot") return; //TODO: special cases?
+
    stringtable.add_string(name->get_string());          // Add class name to string table
 }
 

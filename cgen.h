@@ -38,9 +38,11 @@ private:
    void code_bools(int);
    void code_select_gc();
    void code_constants();
-    void code_objTab(CgenNodeP obj);
-    void code_dispatch(CgenNodeP obj, vector<pair<string, string> > tbl);
-    void code_proto(CgenNodeP obj, vector<string> attrTbl);
+   void code_objTab(CgenNodeP obj);
+   void code_dispatch(CgenNodeP obj, vector<pair<string, string> > tbl);
+   void code_proto(CgenNodeP obj, vector<string> attrTbl);
+
+   void code_nameTab(CgenNodeP obj);
 // The following creates an inheritance graph from
 // a list of classes.  The graph is implemented as
 // a tree of `CgenNode', and class names are placed
