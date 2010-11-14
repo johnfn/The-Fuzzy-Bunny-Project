@@ -25,7 +25,7 @@ fi
 rm them.s
 ./lexer $FILE | ./parser | ./semant | ./cgen_soln > them.s
 rm us.s
-./lexer example.cl | ./parser | ./semant | ./cgen -c > us.s
+./lexer $FILE | ./parser | ./semant | ./cgen -c > us.s
 if [ $OPTION = "-r" ] 
 then
     /usr/class/cs143/bin/spim -file out.s

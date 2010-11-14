@@ -10,3 +10,4 @@ semant
 symtab_example
 *.s
 cgen
+res
