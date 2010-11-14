@@ -371,7 +371,7 @@ Main.main:
 	sw	$ra 4($sp)
 	addiu	$fp $sp 4
 	move	$s0 $a0
-	la	$a0 str_const1 ; this loads the string constant into the attribute
+	la	$a0 str_const1 ; this loads the string constant into the attribute OH WAIT
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
 	move	$a0 $s0

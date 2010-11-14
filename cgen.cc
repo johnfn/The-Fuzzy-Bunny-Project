@@ -827,6 +827,31 @@ void CgenNode::set_parentnd(CgenNodeP p)
   parentnd = p;
 }
 
+
+                                                        //pair< class, method > 
+void CgenClassTable::code_objTab(CgenNodeP obj){
+
+    str << WORD << obj->name << "_protObj" << endl;
+    str << WORD << obj->name << "_init" << endl;
+    
+    List<CgenNode> *children = obj->get_children();
+
+    if (!children) return; //TODO
+
+    //stack<CgenNodeP> s;
+
+    for(; children; children = children->tl()){
+        //s.push(children->hd());
+        code_objTab(children->hd());
+    }
+    /*
+    while(s.size()){ 
+        code_objTab(s.top());
+        s.pop();
+    }
+    */
+}
+
 void CgenClassTable::code_proto(CgenNodeP obj, vector<string> attrTbl){
 
     str << WORD << "-1" << endl;
@@ -958,6 +983,10 @@ void CgenClassTable::code()
     
   vector<pair<string, string> > emptyDispTbl;
   vector<string> emptyAttrTbl;
+  
+  str << CLASSOBJTAB << ":" << endl; 
+  code_objTab(this->root());
+  
   code_dispatch(this->root(), emptyDispTbl);
   code_proto(this->root(), emptyAttrTbl);
 

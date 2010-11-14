@@ -2,7 +2,6 @@
 (*  Example cool program testing as many aspects of the code generator
     as possible.
  *)
-(*
 class B{
     b():Int{5};
 };
@@ -10,7 +9,6 @@ class B{
 class A inherits B{
     x : B <- new B;
 };
-*)
 class Main inherits IO{ 
     a : Int <- 5;
     x : B <- new B;
