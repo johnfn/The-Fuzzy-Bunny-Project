@@ -28,6 +28,7 @@
 #include <stack>
 
 using std::stringstream;
+using std::pair;
 using std::stack;
 
 #define PRINT(x) if (cgen_debug) cout << x << endl
@@ -826,23 +827,105 @@ void CgenNode::set_parentnd(CgenNodeP p)
   parentnd = p;
 }
 
-void CgenClassTable::code_dispatch(CgenNodeP obj, vector<string> tbl){
+void CgenClassTable::code_proto(CgenNodeP obj, vector<string> attrTbl){
+
+    str << WORD << "-1" << endl;
+    str << obj->name << "_protObj:" <<  endl;
+    str << WORD << ++curNumber << endl; //TODO
+    int objSize = 3;
+    Features features = obj->features; 
+    for(int i=0; i < features->len(); i++){
+        if(!features->nth(i)->method){
+            stringstream sstype;
+            sstype << features->nth(i)->type_decl; 
+            attrTbl.push_back(sstype.str());
+        }
+    }
+    
+    objSize += attrTbl.size();
+    str << WORD << objSize << endl;
+    str << WORD << obj->name << "_dispTab" << endl;
+    
+    for(int i=0;i<attrTbl.size();i++){
+
+        /*
+         * 
+  emit_load_int(ACC,inttable.lookup_string(token->get_string()),s);
+}
+
+void string_const_class::code(ostream& s)
+{
+  emit_load_string(ACC,stringtable.lookup_string(token->get_string()),s);
+}
+
+void bool_const_class::code(ostream& s)
+{
+  emit_load_bool(ACC, BoolConst(val), s);
+         */
+
+
+
+        if(attrTbl[i] == "Int"){
+            str << WORD;
+            inttable.lookup_string("0")->code_ref(str);
+            str << endl;
+        }else if(attrTbl[i] == "String"){
+            str << WORD;
+            stringtable.lookup_string("")->code_ref(str);
+            str << endl;
+        }else if(attrTbl[i] == "Bool"){
+            str << WORD;
+            BoolConst(0).code_ref(str); // TODO :: test this
+            str << endl;
+        }else{
+            str << WORD << "0" << endl;
+        }
+    }
+
+
+    List<CgenNode> *children = obj->get_children();
+
+    if (!children) return; //TODO
+    //this->dispatch_table = tbl;
+
+    stack<CgenNodeP> s;
+
+    for(; children; children = children->tl()){
+        s.push(children->hd());
+    }
+    while(s.size()){ 
+        code_proto(s.top(), attrTbl);
+        s.pop();
+    }
+
+}
+
+                                                        //pair< class, method > 
+void CgenClassTable::code_dispatch(CgenNodeP obj, vector<pair<string, string> > tbl){
 
     Features features = obj->features;
     str << obj->name << "_dispTab:" << endl;
     ///Loop through the features of a class         
     for (int i=0;i < features->len(); i++){
         if (features->nth(i)->method){ 
-            stringstream ss;
-            ss << obj->name << "." << features->nth(i)->name; //TODO change if inherited?
-            if (find(tbl.begin(), tbl.end(), ss.str()) != tbl.end()) continue;
-            tbl.push_back(ss.str());
+            stringstream ssobj, ssnm;
+            ssobj << obj->name;
+            ssnm << features->nth(i)->name; //TODO change if inherited?
+            int j;
+            for (j=0;j < tbl.size(); j++) if ( tbl[j].second == ssnm.str()) break;
+            //Method override
+            if (j != tbl.size()){ 
+                tbl[j].first = ssobj.str();
+            }
+            else {
+                tbl.push_back(make_pair(ssobj.str(), ssnm.str()));
+            }
         }
         //Define a method on features that returns name of method 
     }
 
     for (int i=0;i < tbl.size() ;i++){
-        str << WORD << tbl[i] << endl;
+        str << WORD << tbl[i].first << "." << tbl[i].second << endl;
     }
 
     List<CgenNode> *children = obj->get_children();
@@ -873,8 +956,11 @@ void CgenClassTable::code()
   if (cgen_debug) cout << "coding constants" << endl;
   code_constants();
     
-  vector<string> empty;
-  code_dispatch(this->root(), empty);
+  vector<pair<string, string> > emptyDispTbl;
+  vector<string> emptyAttrTbl;
+  code_dispatch(this->root(), emptyDispTbl);
+  code_proto(this->root(), emptyAttrTbl);
+
 //                 Add your code to emit
 //                   - prototype objects
 //                   - class_nameTab
