@@ -814,8 +814,10 @@ void CgenClassTable::set_relations(CgenNodeP nd)
 
 void CgenNode::add_child(CgenNodeP n)
 {
+  PRINT(n->name);
   children = new List<CgenNode>(n,children);
 }
+
 
 void CgenNode::set_parentnd(CgenNodeP p)
 {
