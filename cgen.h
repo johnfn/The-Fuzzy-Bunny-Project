@@ -40,7 +40,7 @@ private:
    void code_constants();
    void code_objTab(CgenNodeP obj);
    void code_dispatch(CgenNodeP obj, vector<pair<string, string> > tbl);
-   void code_proto(CgenNodeP obj, vector<string> attrTbl);
+   void code_proto(CgenNodeP obj, vector<string> attrTbl, vector<string> attrNameTbl);
    void code_init(CgenNodeP obj);
    void code_nameTab(CgenNodeP obj);
    void code_method(CgenNodeP obj);
