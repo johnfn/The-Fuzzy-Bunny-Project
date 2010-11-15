@@ -1046,6 +1046,16 @@ void static_dispatch_class::code(ostream &s) {
 }
 
 void dispatch_class::code(ostream &s) {
+
+    // Loop through the arguments and evaluate them
+    // We need to push the value returned by these arguments onto the stack
+    for(int i=0;i<actuals->len();i++){
+        actuals->nth(i)->code();
+    }
+    
+    //Eval this expression
+    expr->code();
+
 }
 
 void cond_class::code(ostream &s) {
