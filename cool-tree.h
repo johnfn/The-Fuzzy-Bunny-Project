@@ -50,7 +50,6 @@ public:
    tree_node *copy()		 { return copy_Feature(); }
    virtual Feature copy_Feature() = 0;
    bool method; 
-   virtual Symbol stupid() = 0;
    Symbol name;
    Symbol type_decl;
 #ifdef Feature_EXTRAS
@@ -188,7 +187,6 @@ public:
       expr = a4;
       method = true;
    }
-   Symbol stupid(){ return name; } 
    Feature copy_Feature();
    void dump(ostream& stream, int n);
 
@@ -212,7 +210,6 @@ public:
       init = a3;
       method = false;
    }
-   Symbol stupid(){ return name; } 
    Feature copy_Feature();
    void dump(ostream& stream, int n);
 

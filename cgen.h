@@ -38,9 +38,12 @@ private:
    void code_bools(int);
    void code_select_gc();
    void code_constants();
-    void code_objTab(CgenNodeP obj);
-    void code_dispatch(CgenNodeP obj, vector<pair<string, string> > tbl);
-    void code_proto(CgenNodeP obj, vector<string> attrTbl);
+   void code_objTab(CgenNodeP obj);
+   void code_dispatch(CgenNodeP obj, vector<pair<string, string> > tbl);
+   void code_proto(CgenNodeP obj, vector<string> attrTbl);
+   void code_init(CgenNodeP obj);
+   void code_nameTab(CgenNodeP obj);
+   void code_method(CgenNodeP obj);
 // The following creates an inheritance graph from
 // a list of classes.  The graph is implemented as
 // a tree of `CgenNode', and class names are placed
@@ -64,9 +67,9 @@ private:
    List<CgenNode> *children;                  // Children of class
    Basicness basic_status;                    // `Basic' if class is basic
                                               // `NotBasic' otherwise
-   vector<string> functions;
 
 public:
+   vector<pair<string, string> > functions;
    CgenNode(Class_ c,
             Basicness bstatus,
             CgenClassTableP class_table);
