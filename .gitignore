@@ -3,6 +3,7 @@
 *.swp
 them.s.swo
 us.s.swo
+*.swo
 .~
 thumbs.db
 *.lib

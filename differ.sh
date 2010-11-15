@@ -25,8 +25,13 @@ fi
 rm them.s
 ./lexer $FILE | ./parser | ./semant | ./cgen_soln > them.s
 rm us.s
-./lexer $FILE | ./parser | ./semant | ./cgen -c > us.s
-if [ $OPTION = "-r" ] 
+./lexer $FILE | ./parser | ./semant | ./cgen > us.s
+if [ $OPTION = "-us" ] 
 then
-    /usr/class/cs143/bin/spim -file out.s
+    /usr/class/cs143/bin/spim -file us.s
+fi
+
+if [ $OPTION = "-them" ]
+then
+    /usr/class/cs143/bin/spim -file them.s
 fi

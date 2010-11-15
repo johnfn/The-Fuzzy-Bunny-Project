@@ -235,7 +235,7 @@ static void emit_sll(char *dest, char *src1, int num, ostream& s)
 static void emit_jalr(char *dest, ostream& s)
 { s << JALR << "\t" << dest << endl; }
 
-static void emit_jal(char *address,ostream &s)
+static void emit_jal(const char *address,ostream &s)
 { s << JAL << address << endl; }
 
 static void emit_return(ostream& s)
@@ -360,6 +360,35 @@ static void emit_gc_check(char *source, ostream &s)
 {
   if (source != (char*)A1) emit_move(A1, source, s);
   s << JAL << "_gc_check" << endl;
+}
+
+static void emit_wind(ostream &s){
+/*
+ddiu   $sp $sp -12 
+        sw  $fp 12($sp)
+            sw  $s0 8($sp)
+                sw  $ra 4($sp)
+                    addiu   $fp $sp 4
+                        move    $s0 $a0
+*/
+
+    emit_addiu(SP, SP, -12, s);
+    emit_store(FP, 3, SP, s);
+    emit_store(SELF, 2, SP, s);
+    emit_store(RA, 1, SP, s);
+    emit_addiu(FP, SP, 4, s);
+    emit_move(SELF, ACC, s);
+
+}
+
+static void emit_unwind(ostream &s){
+    ///
+    emit_move(ACC, SELF, s);
+    emit_load(FP, 3, SP, s);
+    emit_load(SELF, 2, SP, s);
+    emit_load(RA, 1, SP, s);
+    emit_addiu(SP, SP, 12, s);
+    emit_return(s);
 }
 
 
@@ -489,11 +518,10 @@ void BoolConst::code_def(ostream& s, int boolclasstag)
   code_ref(s);  s << LABEL                                  // label
       << WORD << boolclasstag << endl                       // class tag
       << WORD << (DEFAULT_OBJFIELDS + BOOL_SLOTS) << endl   // object size
-      << WORD;
+      << WORD << BOOLNAME << DISPTAB_SUFFIX << endl;              //dispatch table
 
  /***** Add dispatch information for class Bool ******/
 
-      s << endl;                                            // dispatch table
       s << WORD << val << endl;                             // value (0 or 1)
 }
 
@@ -936,6 +964,31 @@ void bool_const_class::code(ostream& s)
 
 }
 
+void CgenClassTable::code_init(CgenNodeP obj){
+    str << obj->name <<  CLASSINIT_SUFFIX << ":" << endl;
+    emit_wind(str);
+    if(obj->parent != No_class){
+        stringstream s;
+        s << obj->parent << CLASSINIT_SUFFIX;
+        emit_jal(s.str().c_str(), str);
+    }
+    emit_unwind(str);
+
+    List<CgenNode> *children = obj->get_children();
+
+    if (!children) return; //TODO
+    //this->dispatch_table = tbl;
+
+    stack<CgenNodeP> s;
+
+    for(; children; children = children->tl()){
+        s.push(children->hd());
+    }
+    while(s.size()){ 
+        code_init(s.top());
+        s.pop();
+    }
+}
                                                         //pair< class, method > 
 void CgenClassTable::code_dispatch(CgenNodeP obj, vector<pair<string, string> > tbl){
 
@@ -964,6 +1017,8 @@ void CgenClassTable::code_dispatch(CgenNodeP obj, vector<pair<string, string> > 
         str << WORD << tbl[i].first << "." << tbl[i].second << endl;
     }
 
+    obj->functions = tbl;
+
     List<CgenNode> *children = obj->get_children();
 
     if (!children) return; //TODO
@@ -979,6 +1034,38 @@ void CgenClassTable::code_dispatch(CgenNodeP obj, vector<pair<string, string> > 
         s.pop();
     }
 
+}
+
+void CgenClassTable::code_method(CgenNodeP obj){
+
+    if (!obj->basic() ) { 
+
+        Features features = obj->features;
+        for (int i=0;i < features->len(); i++){
+            if (features->nth(i)->method){ 
+                str << obj->name << "." << features->nth(i)->name << ":" << endl;
+                emit_wind(str);
+                method_class *method = (method_class*) features->nth(i); 
+                method->expr->code(str);
+                emit_unwind(str);
+            }
+            //Define a method on features that returns name of method 
+        }
+    }
+
+    List<CgenNode> *children = obj->get_children();
+
+    if (!children) return; //TODO
+
+    stack<CgenNodeP> s;
+
+    for(; children; children = children->tl()){
+        s.push(children->hd());
+    }
+    while(s.size()){ 
+        code_method(s.top());
+        s.pop();
+    }
 }
 
 void CgenClassTable::code()
@@ -1014,11 +1101,14 @@ void CgenClassTable::code()
 
   if (cgen_debug) cout << "coding global text" << endl;
   code_global_text();
-
+    
+  code_init(this->root());
 //                 Add your code to emit
 //                   - object initializer
 //                   - the class methods
 //                   - etc...
+
+    code_method(this->root());
 
 }
 
@@ -1063,9 +1153,11 @@ void assign_class::code(ostream &s) {
 }
 
 void static_dispatch_class::code(ostream &s) {
+    s << "YAYYAYA" << endl;
 }
 
 void dispatch_class::code(ostream &s) {
+    
 }
 
 void cond_class::code(ostream &s) {
