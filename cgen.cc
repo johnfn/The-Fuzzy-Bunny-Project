@@ -26,15 +26,29 @@
 #include "cgen_gc.h"
 #include <sstream>
 #include <stack>
+#include <map>
 
+using std::map;
 using std::stringstream;
 using std::pair;
+using std::make_pair;
 using std::stack;
 
 #define PRINT(x) if (cgen_debug) cout << x << endl
 
 extern void emit_string_constant(ostream& str, char *s);
 extern int cgen_debug;
+
+
+map<Symbol, vector<pair<string, string> >* > symToNode;
+map<Symbol, int> attrsAbove;
+map<Symbol, vector<string> > attrLookup;
+
+
+                    //isHeap, 
+SymbolTable<string,pair<bool, int> > variableOffsets; 
+
+
 
 //
 // Three symbols from the semantic analyzer (semant.cc) are used.
@@ -758,7 +772,6 @@ void CgenClassTable::install_basic_classes()
 //
 // The class Str has a number of slots and operations:
 //       val                                  ???
-//       str_field                            the string itself
 //       length() : Int                       length of the string
 //       concat(arg: Str) : Str               string concatenation
 //       substr(arg: Int, arg2: Int): Str     substring
@@ -891,7 +904,8 @@ void CgenClassTable::code_objTab(CgenNodeP obj){
     */
 }
 
-void CgenClassTable::code_proto(CgenNodeP obj, vector<string> attrTbl){
+void CgenClassTable::code_proto(CgenNodeP obj, vector<string> attrTbl, vector<string> attrNameTbl){
+    attrsAbove[obj->name] = attrTbl.size();
 
     str << WORD << "-1" << endl;
     str << obj->name << "_protObj:" <<  endl;
@@ -900,35 +914,21 @@ void CgenClassTable::code_proto(CgenNodeP obj, vector<string> attrTbl){
     Features features = obj->features; 
     for(int i=0; i < features->len(); i++){
         if(!features->nth(i)->method){
-            stringstream sstype;
+            stringstream sstype, ssname;
             sstype << features->nth(i)->type_decl; 
+            ssname << features->nth(i)->name;
             attrTbl.push_back(sstype.str());
+            attrNameTbl.push_back(ssname.str());
         }
     }
     
+    attrLookup[obj->name] = attrNameTbl; //copy
+
     objSize += (int)attrTbl.size();
     str << WORD << objSize << endl;
     str << WORD << obj->name << "_dispTab" << endl;
     
     for(int i=0;i<(int)attrTbl.size();i++){
-
-        /*
-         * 
-  emit_load_int(ACC,inttable.lookup_string(token->get_string()),s);
-}
-
-void string_const_class::code(ostream& s)
-{
-  emit_load_string(ACC,stringtable.lookup_string(token->get_string()),s);
-}
-
-void bool_const_class::code(ostream& s)
-{
-  emit_load_bool(ACC, BoolConst(val), s);
-         */
-
-
-
         if(attrTbl[i] == "Int"){
             str << WORD;
             inttable.lookup_string("0")->code_ref(str);
@@ -946,11 +946,12 @@ void bool_const_class::code(ostream& s)
         }
     }
 
+    //map<Symbol, vector<string>* > symToAttrTbl;
+
 
     List<CgenNode> *children = obj->get_children();
 
     if (!children) return; //TODO
-    //this->dispatch_table = tbl;
 
     stack<CgenNodeP> s;
 
@@ -958,7 +959,7 @@ void bool_const_class::code(ostream& s)
         s.push(children->hd());
     }
     while(s.size()){ 
-        code_proto(s.top(), attrTbl);
+        code_proto(s.top(), attrTbl, attrNameTbl);
         s.pop();
     }
 
@@ -971,6 +972,19 @@ void CgenClassTable::code_init(CgenNodeP obj){
         stringstream s;
         s << obj->parent << CLASSINIT_SUFFIX;
         emit_jal(s.str().c_str(), str);
+    }
+
+    Features features = obj->features;
+
+    for (int i=0; i< features->len(); i++){
+        if (!features->nth(i)->method){
+            attr_class *a = (attr_class *) features->nth(i);
+            a->init->code(str);
+
+            int offset = attrsAbove[obj->name] + i + 3;
+
+            emit_store(ACC, offset, SELF, str);
+        }
     }
     emit_unwind(str);
 
@@ -1036,11 +1050,31 @@ void CgenClassTable::code_dispatch(CgenNodeP obj, vector<pair<string, string> > 
 
 }
 
+Symbol curClass = Object;
+
 void CgenClassTable::code_method(CgenNodeP obj){
 
-    if (!obj->basic() ) { 
+    //SymbolTable<Symbol,pair<bool, int> > variableOffsets; 
+    variableOffsets.enterscope();
 
+
+    if (!obj->basic() ) { 
+        
+        curClass = obj->name;
         Features features = obj->features;
+        //add all attrs to symtab
+        
+        //FIXME loop through the attr table that we create
+
+    //map<Symbol, vector<string> > attrLookup;
+
+        vector<string> attrs = attrLookup[obj->name]; 
+        for (int i=0;i<attrs.size();i++){
+            pair<bool, int>* p = new pair<bool, int>(true, i+3);
+            variableOffsets.addid(attrs[i], p); //TODO offset+3?
+            //Add variable into scope at correct offset
+        }
+        
         for (int i=0;i < features->len(); i++){
             if (features->nth(i)->method){ 
                 str << obj->name << "." << features->nth(i)->name << ":" << endl;
@@ -1052,6 +1086,8 @@ void CgenClassTable::code_method(CgenNodeP obj){
             //Define a method on features that returns name of method 
         }
     }
+
+    variableOffsets.exitscope();
 
     List<CgenNode> *children = obj->get_children();
 
@@ -1081,7 +1117,7 @@ void CgenClassTable::code()
     
   vector<pair<string, string> > emptyDispTbl;
   vector<string> emptyAttrTbl;
-  
+  vector<string> emptyAttrNameTbl; 
   str << CLASSNAMETAB << ":" << endl; 
   code_nameTab(this->root());
 
@@ -1090,7 +1126,7 @@ void CgenClassTable::code()
 
 
   code_dispatch(this->root(), emptyDispTbl);
-  code_proto(this->root(), emptyAttrTbl);
+  code_proto(this->root(), emptyAttrTbl, emptyAttrNameTbl);
 
 
 //                 Add your code to emit
@@ -1136,6 +1172,10 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
     if (idname == "SELF_TYPE" || idname == "_no_class" || idname == "_prim_slot") return; //TODO: special cases?
 
    stringtable.add_string(name->get_string());          // Add class name to string table
+
+
+    //map<Symbol, CgenNode> symToNode;
+    symToNode[name] = &functions;
 }
 
 
@@ -1156,8 +1196,51 @@ void static_dispatch_class::code(ostream &s) {
     s << "YAYYAYA" << endl;
 }
 
+int lookupMethod(Symbol classname, Symbol name){
+    vector<pair<string, string> > vect = *symToNode[classname];
+    for (int i=0;i< vect.size(); i++){
+        if (vect[i].second == name->get_string()){
+            return i;
+        }
+    }
+    return 99999999;// this will never happen
+//map<Symbol, *vector<pair<string, string> > > symToNode;
+}
+
 void dispatch_class::code(ostream &s) {
     
+    // Loop through the arguments and evaluate them
+    // We need to push the value returned by these arguments onto the stack
+    for(int i=actual->len() - 1; i>=0; i--){
+       actual->nth(i)->code(s);
+       emit_push(ACC, s);
+    }
+    
+    //Check if it's
+    bool self = false;
+    if(expr->type == SELF_TYPE){
+        emit_move(ACC, SELF, s);   
+        self = true;
+    }else{
+ 
+        //Eval this expression
+        expr->code(s);
+    }
+    
+    //TODO Check if the object is null
+
+    emit_load(T1, 2, ACC, s);
+    int offset;
+    if(self){
+        //curClass
+        offset = lookupMethod(curClass, name);
+        
+    }else{
+        offset = lookupMethod(expr->type, name);
+    }
+
+    emit_load(T1, offset, T1, s);
+    emit_jalr(T1, s);
 }
 
 void cond_class::code(ostream &s) {
@@ -1176,6 +1259,10 @@ void let_class::code(ostream &s) {
 }
 
 void plus_class::code(ostream &s) {
+    e1->code(s);
+    emit_move(T1, ACC, s);
+    e2->code(s);
+    emit_add(ACC, T1, ACC, s);
 }
 
 void sub_class::code(ostream &s) {
@@ -1230,6 +1317,13 @@ void no_expr_class::code(ostream &s) {
 }
 
 void object_class::code(ostream &s) {
+    pair<bool, int> res = *(variableOffsets.lookup(name->get_string()));
+
+    if (res.first == true){ //The variable is on the heap (aka it is an attr)
+        emit_load(ACC, res.second, SELF, s);
+    } else {
+
+    }
 }
 
 

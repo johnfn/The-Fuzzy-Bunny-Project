@@ -13,11 +13,11 @@ class A inherits B{
 *)
 
 class Main inherits IO{ 
-    x : Int <- 4;
-    (*a : Int <- 5;
-    x : B <- new B;
-    y : String <- "blahblah";
-    z : Int <- (3 * 5 * 9);*)
-    main():SELF_TYPE { self.out_int(x + x) };
+(*
+    x : Int <- 5;
+    y : Int <- 6;
+    z : Int <- 8;
+*)
+    main():Int { 1+2 };
 };
 
