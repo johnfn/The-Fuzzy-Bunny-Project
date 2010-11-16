@@ -1082,7 +1082,7 @@ void CgenClassTable::code_method(CgenNodeP obj){
     //map<Symbol, vector<string> > attrLookup;
 
         vector<string> attrs = attrLookup[obj->name]; 
-        for (int i=0;i<attrs.size();i++){
+        for (int i=0;i<(int)attrs.size();i++){
             pair<bool, int>* p = new pair<bool, int>(true, i+3);
             variableOffsets.addid(attrs[i], p); //TODO offset+3?
             //Add variable into scope at correct offset
@@ -1202,7 +1202,41 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 //
 //*****************************************************************
 
+/*
+ * emits a load of this variable into ACC.
+ *
+ * Has at least 2 special cases (stack vs heap), maybe more
+ */
+void emit_load_variable(char *id, ostream &s){
+    pair<bool, int> res = *(variableOffsets.lookup(id));
+
+    if (res.first == true){ //The variable is on the heap (aka it is an attr)
+        emit_load(ACC, res.second, SELF, s);
+    } else {
+
+    }
+}
+
+
 void assign_class::code(ostream &s) {
+    expr->code(s); //result stored in ACC
+    //emit_load(ACC, 12, ACC, s);
+    emit_push(ACC, s);
+    emit_load_variable(name->get_string(), s); //ACC has variable we are loading in to
+    //TODO: I get the feeling that this is different for different things.
+
+    emit_pop(S1, s); 
+    //if (expr->type_name == Int){
+        emit_load (S1, INTVAL_OFFSET, S1, s); //Load int val of S1 into S1
+        emit_store(S1, INTVAL_OFFSET, ACC, s); //And store that value into the val offset of the ACC
+    /*   } else if (expr->type_name == Str){
+
+    } else if (expr->type_name == Bool){
+
+    } else {
+        //Some generic object. Copy pointers. I think? Maybe you copy the whole object? Idk. TODO: Look this up
+    }
+    */
 }
 
 void static_dispatch_class::code(ostream &s) {
@@ -1211,7 +1245,7 @@ void static_dispatch_class::code(ostream &s) {
 
 int lookupMethod(Symbol classname, Symbol name){
     vector<pair<string, string> > vect = *symToNode[classname];
-    for (int i=0;i< vect.size(); i++){
+    for (int i=0;i< (int)vect.size(); i++){
         if (vect[i].second == name->get_string()){
             return i;
         }
@@ -1222,6 +1256,9 @@ int lookupMethod(Symbol classname, Symbol name){
 
 void dispatch_class::code(ostream &s) {
     
+    //TODO Aiken said that this was tricky because I think you evaluate the object last.
+    //Ensure that we do this.
+
     // Loop through the arguments and evaluate them
     // We need to push the value returned by these arguments onto the stack
     for(int i=actual->len() - 1; i>=0; i--){
@@ -1247,7 +1284,6 @@ void dispatch_class::code(ostream &s) {
     emit_jal("_dispatch_abort", s);
     emit_label_def(label_count, s);
     label_count++;
-label0:
 
     emit_load(T1, 2, ACC, s);
     int offset;
