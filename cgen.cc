@@ -1260,6 +1260,9 @@ void typcase_class::code(ostream &s) {
 }
 
 void block_class::code(ostream &s) {
+    for (int i=0;i<body->len();i++){
+        body->nth(i)->code(s);
+    }
 }
 
 void let_class::code(ostream &s) {
