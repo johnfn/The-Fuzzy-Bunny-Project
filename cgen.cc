@@ -34,7 +34,7 @@ using std::pair;
 using std::make_pair;
 using std::stack;
 
-#define PRINT(x) if (cgen_debug) cout << x << endl
+#define PRINT(x) if (cgen_debug || true) cout << x << endl
 
 extern void emit_string_constant(ostream& str, char *s);
 extern int cgen_debug;
@@ -977,11 +977,12 @@ void CgenClassTable::code_init(CgenNodeP obj){
 
     Features features = obj->features;
 
+    //PRINT("??");
     for (int i=0; i< features->len(); i++){
-        if (!features->nth(i)->method){
+        if (!features->nth(i)->method && !obj->basic() ){
             attr_class *a = (attr_class *) features->nth(i);
             a->init->code(str);
-
+            //PRINT( "coding... " << features->nth(i)->name);
             int offset = attrsAbove[obj->name] + i + 3;
 
             emit_store(ACC, offset, SELF, str);
