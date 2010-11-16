@@ -20,10 +20,7 @@ class Main inherits IO{
     sthg : Int <- 6;
     main():SELF_TYPE { 
     {
-        self.out_int(1);
-        self.out_int(2);
-        self.out_int(3);
-        self.out_int(4);
+        self.out_int(2 * 3 - 6 + 2 * 3 - 6 + 1 / 1);
     }
 };
 };

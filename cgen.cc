@@ -345,6 +345,19 @@ static void emit_push(char *reg, ostream& str)
   emit_addiu(SP,SP,-4,str);
 }
 
+
+/*
+ * pop into register reg
+ *
+ * It bugs me that they didn't code this for us...
+ */
+static void emit_pop(char *reg, ostream& str)
+{
+
+    emit_addiu(SP,SP,4,str);
+    emit_load(reg,0,SP,str);
+}
+
 //
 // Fetch the integer value in an Int object.
 // Emits code to fetch the integer value of the Integer object pointed
@@ -1268,29 +1281,51 @@ void block_class::code(ostream &s) {
 void let_class::code(ostream &s) {
 }
 
-void plus_class::code(ostream &s) {
+#define EMIT_PLUS 0
+#define EMIT_SUB 1
+#define EMIT_MUL 2
+#define EMIT_DIVIDE 3
+
+void emit_arith(ostream &s, int type, Expression e1, Expression e2){
     //Must return an int object.
     e1->code(s);
     //emit_move(T1, ACC, s);
     emit_load(S1, INTVAL_OFFSET, ACC, s); //load int value from result
+    emit_push(S1, s); //must push result to stack (no way to guarantee that we wont overwrite values)
 
     e2->code(s); //result obj in ACC
 
     emit_jal("Object.copy", s); //copy 2nd object to return
     emit_load(T2, INTVAL_OFFSET, ACC, s); //load int value from 2nd object
 
-    emit_add(S1, S1, T2, s); //add int values and put them into the copied object
+    emit_pop(S1, s); //now pop result from stack
+
+    if (type == EMIT_PLUS)
+        emit_add(S1, S1, T2, s); //add int values and put them into the copied object
+    if (type == EMIT_SUB)
+        emit_sub(S1, S1, T2, s);
+    if (type == EMIT_MUL)
+        emit_mul(S1, S1, T2, s);
+    if (type == EMIT_DIVIDE)
+        emit_div(S1, S1, T2, s);
+        
     emit_store(S1, INTVAL_OFFSET, ACC, s);
-    
+}
+void plus_class::code(ostream &s) {
+    emit_arith(s, EMIT_PLUS, e1, e2);
 }
 
 void sub_class::code(ostream &s) {
+    emit_arith(s, EMIT_SUB, e1, e2);
 }
 
 void mul_class::code(ostream &s) {
-}
+
+    emit_arith(s, EMIT_MUL, e1, e2);
+ }
 
 void divide_class::code(ostream &s) {
+    emit_arith(s, EMIT_DIVIDE, e1, e2);
 }
 
 void neg_class::code(ostream &s) {
