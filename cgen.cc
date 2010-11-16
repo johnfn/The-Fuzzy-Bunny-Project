@@ -34,7 +34,7 @@ using std::pair;
 using std::make_pair;
 using std::stack;
 
-#define PRINT(x) if (cgen_debug || true) cout << x << endl
+#define PRINT(x) if (cgen_debug) cout << x << endl
 
 extern void emit_string_constant(ostream& str, char *s);
 extern int cgen_debug;
@@ -977,12 +977,10 @@ void CgenClassTable::code_init(CgenNodeP obj){
 
     Features features = obj->features;
 
-    //PRINT("??");
     for (int i=0; i< features->len(); i++){
         if (!features->nth(i)->method && !obj->basic() ){
             attr_class *a = (attr_class *) features->nth(i);
             a->init->code(str);
-            //PRINT( "coding... " << features->nth(i)->name);
             int offset = attrsAbove[obj->name] + i + 3;
 
             emit_store(ACC, offset, SELF, str);
@@ -1268,10 +1266,19 @@ void let_class::code(ostream &s) {
 }
 
 void plus_class::code(ostream &s) {
+    //Must return an int object.
     e1->code(s);
-    emit_move(T1, ACC, s);
-    e2->code(s);
-    emit_add(ACC, T1, ACC, s);
+    //emit_move(T1, ACC, s);
+    emit_load(S1, INTVAL_OFFSET, ACC, s); //load int value from result
+
+    e2->code(s); //result obj in ACC
+
+    emit_jal("Object.copy", s); //copy 2nd object to return
+    emit_load(T2, INTVAL_OFFSET, ACC, s); //load int value from 2nd object
+
+    emit_add(S1, S1, T2, s); //add int values and put them into the copied object
+    emit_store(S1, INTVAL_OFFSET, ACC, s);
+    
 }
 
 void sub_class::code(ostream &s) {

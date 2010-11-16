@@ -13,12 +13,11 @@ class A inherits B{
 *)
 
 class Main inherits IO{ 
-(*
     x : Int <- 5;
     y : Int <- 6;
     z : Int <- 8;
-*)
+
     sthg : Int <- 6;
-    main():SELF_TYPE { self.out_int(1) };
+    main():SELF_TYPE { self.out_int(z + y + z) };
 };
 
