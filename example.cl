@@ -18,6 +18,6 @@ class Main inherits IO{
     y : Int <- 6;
     z : Int <- 8;
 *)
-    main():Int { 1+2 };
+    main():SELF_TYPE { self.out_int(1) };
 };
 

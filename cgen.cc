@@ -38,6 +38,7 @@ using std::stack;
 
 extern void emit_string_constant(ostream& str, char *s);
 extern int cgen_debug;
+int label_count = 0;
 
 
 map<Symbol, vector<pair<string, string> >* > symToNode;
@@ -1228,6 +1229,13 @@ void dispatch_class::code(ostream &s) {
     }
     
     //TODO Check if the object is null
+	emit_bne(ACC, ZERO, label_count, s);
+    emit_load_address(ACC, "str_const0", s); //TODO: This is wrong. (Should be the str that contains the current file name.)
+    emit_load_imm(T1, 21, s);
+    emit_jal("_dispatch_abort", s);
+    emit_label_def(label_count, s);
+    label_count++;
+label0:
 
     emit_load(T1, 2, ACC, s);
     int offset;
