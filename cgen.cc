@@ -46,9 +46,10 @@ map<Symbol, int> attrsAbove;
 map<Symbol, vector<string> > attrLookup;
 
 
-                    //isHeap, 
+                    //isHeap,offset
 SymbolTable<string,pair<bool, int> > variableOffsets; 
 
+SymbolTable<string, Symbol> variableTypes;
 
 
 //
@@ -1067,9 +1068,8 @@ Symbol curClass = Object;
 
 void CgenClassTable::code_method(CgenNodeP obj){
 
-    //SymbolTable<Symbol,pair<bool, int> > variableOffsets; 
     variableOffsets.enterscope();
-
+    variableTypes.enterscope();
 
     if (!obj->basic() ) { 
         
@@ -1082,10 +1082,13 @@ void CgenClassTable::code_method(CgenNodeP obj){
     //map<Symbol, vector<string> > attrLookup;
 
         vector<string> attrs = attrLookup[obj->name]; 
-        for (int i=0;i<(int)attrs.size();i++){
+        for (int i=0;i<(int)attrs.size();i++){ //Add variable into scope at correct offset
             pair<bool, int>* p = new pair<bool, int>(true, i+3);
             variableOffsets.addid(attrs[i], p); //TODO offset+3?
-            //Add variable into scope at correct offset
+        }
+        for (int i=0; i<(int)attrs.size();i++){
+            if (!features->nth(i)->method)
+                variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
         }
         
         for (int i=0;i < features->len(); i++){
@@ -1095,12 +1098,13 @@ void CgenClassTable::code_method(CgenNodeP obj){
                 method_class *method = (method_class*) features->nth(i); 
                 method->expr->code(str);
                 emit_unwind(str);
-            }
+            } 
             //Define a method on features that returns name of method 
         }
     }
 
     variableOffsets.exitscope();
+    variableTypes.exitscope();
 
     List<CgenNode> *children = obj->get_children();
 
@@ -1226,17 +1230,17 @@ void assign_class::code(ostream &s) {
     //TODO: I get the feeling that this is different for different things.
 
     emit_pop(S1, s); 
-    //if (expr->type_name == Int){
+    Symbol type = (*variableTypes.lookup(name->get_string()));
+    if (type == Int){
         emit_load (S1, INTVAL_OFFSET, S1, s); //Load int val of S1 into S1
         emit_store(S1, INTVAL_OFFSET, ACC, s); //And store that value into the val offset of the ACC
-    /*   } else if (expr->type_name == Str){
+    } else if (type == Str){
 
-    } else if (expr->type_name == Bool){
+    } else if (type == Bool){
 
     } else {
         //Some generic object. Copy pointers. I think? Maybe you copy the whole object? Idk. TODO: Look this up
     }
-    */
 }
 
 void static_dispatch_class::code(ostream &s) {
