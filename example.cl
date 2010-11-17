@@ -13,15 +13,17 @@ class A inherits B{
 *)
 
 class Main inherits IO{ 
-    x : Int <- 5;
-    y : Int <- 6;
-    z : Int <- 8;
+    s : String <- "Hello.";
 
-    sthg : Int <- 6;
+    x : Int <- 6;
+
     main():SELF_TYPE { 
     {
-        sthg <- 1+2+3+4/2;
-        self.out_int(sthg);
+        x <- 1;
+        self.out_int(x);
+
+        s <- "Hi!";
+        self.out_string(s);
     }
 };
 };

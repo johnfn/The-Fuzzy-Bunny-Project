@@ -1220,27 +1220,39 @@ void emit_load_variable(char *id, ostream &s){
 
     }
 }
+/*
+ * The same thing except it stores ACC into where the var is.
+ */
+void emit_store_variable(char *id, ostream &s){
+    pair<bool, int> res = *(variableOffsets.lookup(id));
 
+    if (res.first == true){ //The variable is on the heap (aka it is an attr)
+        emit_store(ACC, res.second, SELF, s);
+    } else {
 
+    }
+}
+
+void emit_check_acc(ostream &s){
+	emit_bne(ACC, ZERO, label_count, s);
+    emit_load_address(ACC, "str_const0", s); //TODO: This is wrong. (Should be the str that contains the current file name.)
+    emit_load_imm(T1, 21, s);
+    emit_jal("_dispatch_abort", s);
+    emit_label_def(label_count, s);
+    label_count++;
+}
+
+/*
+ * TODO: This fn could actually be written just as an object.copy into the new place.
+ *
+ * Horribly inefficient, but no one is going to stop you. Probably.
+ */
 void assign_class::code(ostream &s) {
     expr->code(s); //result stored in ACC
-    //emit_load(ACC, 12, ACC, s);
-    emit_push(ACC, s);
-    emit_load_variable(name->get_string(), s); //ACC has variable we are loading in to
-    //TODO: I get the feeling that this is different for different things.
 
-    emit_pop(S1, s); 
-    Symbol type = (*variableTypes.lookup(name->get_string()));
-    if (type == Int){
-        emit_load (S1, INTVAL_OFFSET, S1, s); //Load int val of S1 into S1
-        emit_store(S1, INTVAL_OFFSET, ACC, s); //And store that value into the val offset of the ACC
-    } else if (type == Str){
+    emit_move(S1, ACC, s);
 
-    } else if (type == Bool){
-
-    } else {
-        //Some generic object. Copy pointers. I think? Maybe you copy the whole object? Idk. TODO: Look this up
-    }
+    emit_store_variable(name->get_string(), s);
 }
 
 void static_dispatch_class::code(ostream &s) {
@@ -1282,12 +1294,8 @@ void dispatch_class::code(ostream &s) {
     }
     
     //TODO Check if the object is null
-	emit_bne(ACC, ZERO, label_count, s);
-    emit_load_address(ACC, "str_const0", s); //TODO: This is wrong. (Should be the str that contains the current file name.)
-    emit_load_imm(T1, 21, s);
-    emit_jal("_dispatch_abort", s);
-    emit_label_def(label_count, s);
-    label_count++;
+
+    emit_check_acc(s);
 
     emit_load(T1, 2, ACC, s);
     int offset;
@@ -1360,7 +1368,6 @@ void sub_class::code(ostream &s) {
 }
 
 void mul_class::code(ostream &s) {
-
     emit_arith(s, EMIT_MUL, e1, e2);
  }
 
