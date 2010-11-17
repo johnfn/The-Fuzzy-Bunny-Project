@@ -39,7 +39,7 @@ using std::stack;
 extern void emit_string_constant(ostream& str, char *s);
 extern int cgen_debug;
 int label_count = 0;
-
+int cur_offset = 0;
 
 map<Symbol, vector<pair<string, string> >* > symToNode;
 map<Symbol, int> attrsAbove;
@@ -1220,6 +1220,11 @@ void emit_loadstore_var(char *id, ostream &s, int type){
         }
 
     } else {
+        if (type==LOADTYPE){
+            emit_load(ACC, res.second, FP, s); // store the local variable on the stack
+        } else {
+            emit_store(ACC, res.second, FP, s);
+        }
         //stack handling here
     }
 }
@@ -1363,6 +1368,27 @@ void block_class::code(ostream &s) {
 }
 
 void let_class::code(ostream &s) {
+    int offset = ++cur_offset;
+    variableOffsets.enterscope();
+    variableTypes.enterscope();
+
+    pair<bool, int>* p = new pair<bool, int>(false, cur_offset);
+    variableOffsets.addid(identifier->get_string(), p);
+    variableTypes.addid(identifier->get_string(), &type_decl);
+
+    emit_addiu(SP, SP, -4, s); //make room on the stack for the next variable 
+
+    init->code(s);
+
+    emit_store(ACC, offset, FP, s); // store the local variable on the stack
+
+    body->code(s);
+
+    emit_addiu(SP, SP, 4, s); //stack goes back up
+
+    variableOffsets.exitscope();
+    variableTypes.exitscope();
+
 }
 
 #define EMIT_PLUS 0
@@ -1418,6 +1444,15 @@ void neg_class::code(ostream &s) {
     emit_store(S1, INTVAL_OFFSET, ACC, s);
 }
 
+//TODO: I don't think these should be hardcoded in. 
+void emit_load_false(ostream &s){
+    emit_load_address(ACC, "bool_const0", s); 
+}
+
+void emit_load_true(ostream &s){
+    emit_load_address(ACC, "bool_const1", s); 
+}
+
 void comparison_general(Expression e1, Expression e2, ostream &s, bool add1){
     e1->code(s);
     emit_int_get_val(s);
@@ -1432,10 +1467,10 @@ void comparison_general(Expression e1, Expression e2, ostream &s, bool add1){
 
     emit_blt(S1, ACC, label_true, s); //branch if e1 < e2
     //load false into the accumulator
-    emit_load_address(ACC, "bool_const0", s); //TODO: I don't think these should be hardcoded in. 
+    emit_load_false(s);
     emit_branch(label_exit, s);
     emit_label_def(label_true, s);
-    emit_load_address(ACC, "bool_const1", s);
+    emit_load_true(s);
     //load true into the acc
     emit_label_def(label_exit, s);
 }
@@ -1454,6 +1489,18 @@ void eq_class::code(ostream &s) {
 }
 
 void comp_class::code(ostream &s) {
+    int label_false = label_count++;
+    int label_done = label_count++;
+
+    e1->code(s);
+    emit_bool_get_val(s);
+    emit_beq(ACC, ZERO, label_false, s);
+    emit_load_true(s);
+    emit_branch(label_done, s);
+    emit_label_def(label_false, s);
+    emit_load_false(s);
+    emit_label_def(label_done, s);
+
 }
 
 void int_const_class::code(ostream& s)  
