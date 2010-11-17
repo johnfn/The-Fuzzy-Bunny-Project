@@ -1414,11 +1414,28 @@ void neg_class::code(ostream &s) {
     emit_store(S1, INTVAL_OFFSET, ACC, s);
 }
 
-//Guaranteed to have int arguments.
+//Guaranteed to have int arguments, but it returns a bool.
 void lt_class::code(ostream &s) {
+    e1->code(s);
+    emit_push(ACC, s);
+    e2->code(s);
+    emit_pop(S1, s);
+
+    int label_true = label_count++;
+    int label_exit = label_count++;
+    emit_blt(e1, e2, label_true, s); //branch if e1 < e2
+    //load false into the accumulator
+    emit_load_address(ACC, "bool_const0", s); //TODO: I don't think these should be hardcoded in. :w
+    emit_branch(label_exit, s);
+    emit_label_def(label_true, s);
+    emit_load_address(ACC, "bool_const1", s);
+    //load true into the acc
+    emit_label_def(label_exit, s);
+
 }
 
 void leq_class::code(ostream &s) {
+    //add 1 and then eval lt
 }
 
 void eq_class::code(ostream &s) {

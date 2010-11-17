@@ -15,13 +15,18 @@ class A inherits B{
 class Main inherits IO{ 
     b : Bool <- true;
     c : Bool <- true;
-
+    i : Int <- 0;
     main():Object { 
+        while i<10 loop {
+            i <- i + 1;
+            out_int(i);
+            out_string("\n");
+        } pool
         (*while b loop {
             if c then c <- false else b <- false fi; 
             out_string("Should see this twice.");
         } pool*)
-        out_int(~5)
+        (* out_int(~5)*)
     };
 };
 
