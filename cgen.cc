@@ -1257,7 +1257,7 @@ void emit_check_acc(ostream &s){
 void assign_class::code(ostream &s) {
     expr->code(s); //result stored in ACC
 
-    emit_move(S1, ACC, s);
+    //emit_move(S1, ACC, s);
 
     emit_store_variable(name->get_string(), s);
 }
@@ -1454,13 +1454,7 @@ void no_expr_class::code(ostream &s) {
 }
 
 void object_class::code(ostream &s) {
-    pair<bool, int> res = *(variableOffsets.lookup(name->get_string()));
-
-    if (res.first == true){ //The variable is on the heap (aka it is an attr)
-        emit_load(ACC, res.second, SELF, s);
-    } else {
-
-    }
+    emit_load_variable(name->get_string(), s); 
 }
 
 

@@ -16,11 +16,10 @@ class Main inherits IO{
     b : Bool <- true;
     c : Bool <- true;
 
-    (* TODO try dispatch w/o self *)
     main():Object { 
         while b loop {
             if c then c <- false else b <- false fi; 
-            self.out_string("Should see this twice.");
+            out_string("Should see this twice.");
         } pool
     };
 };
