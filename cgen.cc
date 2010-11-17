@@ -1240,7 +1240,7 @@ void emit_store_variable(char *id, ostream &s){
     emit_loadstore_var(id, s, STORETYPE);
 }
 
-void emit_check_acc(ostream &s){
+void emit_check_acc_null(ostream &s){
     label_count++;
 	emit_bne(ACC, ZERO, label_count, s);
     emit_load_address(ACC, "str_const0", s); //TODO: This is wrong. (Should be the str that contains the current file name.)
@@ -1250,14 +1250,10 @@ void emit_check_acc(ostream &s){
 }
 
 /*
- * TODO: This fn could actually be written just as an object.copy into the new place.
- *
- * Horribly inefficient, but no one is going to stop you. Probably.
+ * Horribly inefficient, but no one is going to stop us. Probably.
  */
 void assign_class::code(ostream &s) {
     expr->code(s); //result stored in ACC
-
-    //emit_move(S1, ACC, s);
 
     emit_store_variable(name->get_string(), s);
 }
@@ -1302,7 +1298,7 @@ void dispatch_class::code(ostream &s) {
     
     //TODO Check if the object is null
 
-    emit_check_acc(s);
+    emit_check_acc_null(s);
 
     emit_load(T1, 2, ACC, s);
     int offset;
@@ -1412,15 +1408,20 @@ void divide_class::code(ostream &s) {
 }
 
 void neg_class::code(ostream &s) {
+    e1->code(s);
+    emit_load(S1, INTVAL_OFFSET, ACC, s);
+    emit_sub(S1, ZERO, S1, s);
+    emit_store(S1, INTVAL_OFFSET, ACC, s);
 }
 
+//Guaranteed to have int arguments.
 void lt_class::code(ostream &s) {
 }
 
-void eq_class::code(ostream &s) {
+void leq_class::code(ostream &s) {
 }
 
-void leq_class::code(ostream &s) {
+void eq_class::code(ostream &s) {
 }
 
 void comp_class::code(ostream &s) {

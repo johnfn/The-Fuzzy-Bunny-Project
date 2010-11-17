@@ -17,10 +17,11 @@ class Main inherits IO{
     c : Bool <- true;
 
     main():Object { 
-        while b loop {
+        (*while b loop {
             if c then c <- false else b <- false fi; 
             out_string("Should see this twice.");
-        } pool
+        } pool*)
+        out_int(~5)
     };
 };
 
