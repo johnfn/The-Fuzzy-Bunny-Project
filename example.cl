@@ -13,18 +13,12 @@ class A inherits B{
 *)
 
 class Main inherits IO{ 
-    s : String <- "Hello.";
+    b : Bool <- true;
+    c : Bool <- false;
 
-    x : Int <- 6;
-
+    (* TODO try dispatch w/o self *)
     main():SELF_TYPE { 
-    {
-        x <- 1;
-        self.out_int(x);
-
-        s <- "Hi!";
-        self.out_string(s);
-    }
-};
+        if b then (if c then self.out_string("bah!") else self.out_string("Things are looking good!") fi) else self.out_string("Boo.") fi
+    };
 };
 

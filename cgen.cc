@@ -1206,40 +1206,47 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 //
 //*****************************************************************
 
+#define LOADTYPE 0
+#define STORETYPE 1
+
+void emit_loadstore_var(char *id, ostream &s, int type){
+    pair<bool, int> res = *(variableOffsets.lookup(id));
+
+    if (res.first == true){ //variable is on the heap
+        if (type==LOADTYPE){
+            emit_load(ACC, res.second, SELF, s);
+        } else { //type == STORETYPE
+            emit_store(ACC, res.second, SELF, s);
+        }
+
+    } else {
+        //stack handling here
+    }
+}
+
+
 /*
  * emits a load of this variable into ACC.
  *
  * Has at least 2 special cases (stack vs heap), maybe more
  */
 void emit_load_variable(char *id, ostream &s){
-    pair<bool, int> res = *(variableOffsets.lookup(id));
-
-    if (res.first == true){ //The variable is on the heap (aka it is an attr)
-        emit_load(ACC, res.second, SELF, s);
-    } else {
-
-    }
+    emit_loadstore_var(id, s, LOADTYPE);
 }
 /*
  * The same thing except it stores ACC into where the var is.
  */
 void emit_store_variable(char *id, ostream &s){
-    pair<bool, int> res = *(variableOffsets.lookup(id));
-
-    if (res.first == true){ //The variable is on the heap (aka it is an attr)
-        emit_store(ACC, res.second, SELF, s);
-    } else {
-
-    }
+    emit_loadstore_var(id, s, STORETYPE);
 }
 
 void emit_check_acc(ostream &s){
+    label_count++;
 	emit_bne(ACC, ZERO, label_count, s);
     emit_load_address(ACC, "str_const0", s); //TODO: This is wrong. (Should be the str that contains the current file name.)
     emit_load_imm(T1, 21, s);
     emit_jal("_dispatch_abort", s);
     emit_label_def(label_count, s);
-    label_count++;
 }
 
 /*
@@ -1311,7 +1318,28 @@ void dispatch_class::code(ostream &s) {
     emit_jalr(T1, s);
 }
 
+void emit_bool_val(ostream &s){ //Turns ACC into bool val of ACC.
+    emit_load(ACC, BOOLVAL_OFFSET, ACC, s);
+}
+
 void cond_class::code(ostream &s) {
+    pred->code(s); //result of pred into acc
+    
+    //load 1/0 into acc
+    emit_bool_val(s); 
+
+    int firstlabel = label_count++;
+    int secondlabel = label_count++;
+
+    emit_beqz(ACC, firstlabel, s); //branch if false
+    then_exp->code(s);
+    emit_branch(secondlabel, s); //go to end now.
+    emit_label_def(firstlabel, s);
+    else_exp->code(s);
+    emit_label_def(secondlabel, s);
+    //label:
+    //eval false expr
+    //label2:
 }
 
 void loop_class::code(ostream &s) {

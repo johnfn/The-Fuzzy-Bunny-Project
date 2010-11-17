@@ -53,7 +53,9 @@
 #define SIZE_OFFSET 1
 #define DISPTABLE_OFFSET 2
 
+//I put these here...
 #define INTVAL_OFFSET 3
+#define BOOLVAL_OFFSET 3
 
 #define STRING_SLOTS      1
 #define INT_SLOTS         1
