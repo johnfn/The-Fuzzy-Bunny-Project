@@ -1318,6 +1318,10 @@ void emit_bool_get_val(ostream &s){ //Turns ACC into bool val of ACC.
     emit_load(ACC, BOOLVAL_OFFSET, ACC, s);
 }
 
+void emit_int_get_val(ostream &s){ //Ironically this is exactly the same as the above fn but whatever.
+    emit_load(ACC, INTVAL_OFFSET, ACC, s);
+}
+
 void cond_class::code(ostream &s) {
     pred->code(s); //result of pred into acc
     
@@ -1414,28 +1418,36 @@ void neg_class::code(ostream &s) {
     emit_store(S1, INTVAL_OFFSET, ACC, s);
 }
 
-//Guaranteed to have int arguments, but it returns a bool.
-void lt_class::code(ostream &s) {
+void comparison_general(Expression e1, Expression e2, ostream &s, bool add1){
     e1->code(s);
+    emit_int_get_val(s);
     emit_push(ACC, s);
     e2->code(s);
+    emit_int_get_val(s);
+    if (add1) emit_addiu(ACC, ACC, 1, s);
     emit_pop(S1, s);
 
     int label_true = label_count++;
     int label_exit = label_count++;
-    emit_blt(e1, e2, label_true, s); //branch if e1 < e2
+
+    emit_blt(S1, ACC, label_true, s); //branch if e1 < e2
     //load false into the accumulator
-    emit_load_address(ACC, "bool_const0", s); //TODO: I don't think these should be hardcoded in. :w
+    emit_load_address(ACC, "bool_const0", s); //TODO: I don't think these should be hardcoded in. 
     emit_branch(label_exit, s);
     emit_label_def(label_true, s);
     emit_load_address(ACC, "bool_const1", s);
     //load true into the acc
     emit_label_def(label_exit, s);
+}
 
+//Guaranteed to have int arguments, but it returns a bool.
+void lt_class::code(ostream &s) {
+    comparison_general(e1, e2, s, false);
 }
 
 void leq_class::code(ostream &s) {
     //add 1 and then eval lt
+    comparison_general(e1, e2, s, true);
 }
 
 void eq_class::code(ostream &s) {
