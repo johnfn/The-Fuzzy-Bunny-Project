@@ -1318,7 +1318,7 @@ void dispatch_class::code(ostream &s) {
     emit_jalr(T1, s);
 }
 
-void emit_bool_val(ostream &s){ //Turns ACC into bool val of ACC.
+void emit_bool_get_val(ostream &s){ //Turns ACC into bool val of ACC.
     emit_load(ACC, BOOLVAL_OFFSET, ACC, s);
 }
 
@@ -1326,7 +1326,7 @@ void cond_class::code(ostream &s) {
     pred->code(s); //result of pred into acc
     
     //load 1/0 into acc
-    emit_bool_val(s); 
+    emit_bool_get_val(s); 
 
     int firstlabel = label_count++;
     int secondlabel = label_count++;
@@ -1337,12 +1337,20 @@ void cond_class::code(ostream &s) {
     emit_label_def(firstlabel, s);
     else_exp->code(s);
     emit_label_def(secondlabel, s);
-    //label:
-    //eval false expr
-    //label2:
 }
 
 void loop_class::code(ostream &s) {
+    int top_loop = label_count++;
+    int end_loop = label_count++;
+
+    emit_label_def(top_loop, s);
+    pred->code(s); //evalulate predicate and jump out if 
+    emit_bool_get_val(s);
+    emit_beqz(ACC, end_loop, s); //it is false
+    body->code(s); //otherwise do the loop
+    emit_branch(top_loop, s);
+    emit_label_def(end_loop, s);
+
 }
 
 void typcase_class::code(ostream &s) {

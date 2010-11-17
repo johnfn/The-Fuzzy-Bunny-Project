@@ -14,11 +14,14 @@ class A inherits B{
 
 class Main inherits IO{ 
     b : Bool <- true;
-    c : Bool <- false;
+    c : Bool <- true;
 
     (* TODO try dispatch w/o self *)
-    main():SELF_TYPE { 
-        if b then (if c then self.out_string("bah!") else self.out_string("Things are looking good!") fi) else self.out_string("Boo.") fi
+    main():Object { 
+        while b loop {
+            if c then c <- false else b <- false fi; 
+            self.out_string("Should see this twice.");
+        } pool
     };
 };
 
