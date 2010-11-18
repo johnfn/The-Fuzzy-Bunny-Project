@@ -1055,13 +1055,27 @@ void CgenClassTable::code_init(CgenNodeP obj){
     emit_wind(str);
     curClass = obj->name;
     
+    Features features = obj->features;
+    
+    variableOffsets.enterscope();
+    variableTypes.enterscope();
+    
+    vector<string> attrs = attrLookup[obj->name]; 
+    for (int i=0;i<(int)attrs.size();i++){ //Add variable into scope at correct offset
+        pair<bool, int>* p = new pair<bool, int>(true, i+3);
+        variableOffsets.addid(attrs[i], p); //TODO offset+3?
+    }
+    for (int i=0; i<(int)attrs.size();i++){
+        if (!features->nth(i)->method)
+            variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
+    }
+        
     if(obj->parent != No_class){
         stringstream s;
         s << obj->parent << CLASSINIT_SUFFIX;
         emit_jal(s.str().c_str(), str);
     }
 
-    Features features = obj->features;
 
     for (int i=0; i< features->len(); i++){
         if (!features->nth(i)->method && !obj->basic() ){
@@ -1077,6 +1091,9 @@ void CgenClassTable::code_init(CgenNodeP obj){
 
     emit_move(ACC, SELF, str);
     emit_unwind(str, 0);
+
+    variableOffsets.exitscope();
+    variableTypes.exitscope();
 
     List<CgenNode> *children = obj->get_children();
 
@@ -1153,8 +1170,6 @@ void CgenClassTable::code_method(CgenNodeP obj){
         //add all attrs to symtab
         
         //FIXME loop through the attr table that we create
-
-    //map<Symbol, vector<string> > attrLookup;
 
         vector<string> attrs = attrLookup[obj->name]; 
         for (int i=0;i<(int)attrs.size();i++){ //Add variable into scope at correct offset
