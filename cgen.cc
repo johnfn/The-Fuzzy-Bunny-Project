@@ -1096,7 +1096,7 @@ void CgenClassTable::code_init(CgenNodeP obj){
         if (!features->nth(i)->method && !obj->basic() ){
             attr_class *a = (attr_class *) features->nth(i);
 
-            //initialize_default_value(a->type_decl, str); //TODO, hmm.
+            initialize_default_value(a->type_decl, str); //TODO, hmm.
             a->init->code(str);
             int offset = attrsAbove[obj->name] + featuresSeen + 3;
             ++featuresSeen;

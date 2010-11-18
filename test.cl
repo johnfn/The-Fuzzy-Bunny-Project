@@ -1,6 +1,20 @@
+class A inherits IO{
+    x : Int;
+    y : Int;
+    init():Int {{ x <- 1; y <- 1; }};
+    setxy():Object {{ x <- 1; y <- 1; }};
+    getx():Object { out_int(x) };
+};
+
 class Main inherits IO {
 
-    main():SELF_TYPE { 
-        self.out_string("1").out_string("2").out_string("3")
-};
+    f : A;
+
+    main():Object { 
+{
+        f <- new A;        
+        f.setxy();
+        f.getx();
+}
+    };
 };
