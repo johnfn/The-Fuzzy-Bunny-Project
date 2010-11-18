@@ -924,7 +924,13 @@ void CgenClassTable::code_proto(CgenNodeP obj, vector<string> attrTbl, vector<st
 
     str << WORD << "-1" << endl;
     str << obj->name << "_protObj:" <<  endl;
-    str << WORD << ++curNumber << endl; //TODO
+
+    ++curNumber;
+    if (curNumber == 8) { 
+        str << WORD << 5 << endl; //TODO
+    } else { 
+        str << WORD << curNumber << endl; //TODO
+    }
     int objSize = 3;
     Features features = obj->features; 
     for(int i=0; i < features->len(); i++){
@@ -1246,12 +1252,12 @@ void emit_store_variable(char *id, ostream &s){
 }
 
 void emit_check_acc_null(ostream &s){
-    label_count++;
-	emit_bne(ACC, ZERO, label_count, s);
+    int jump_label = label_count++;
+	emit_bne(ACC, ZERO, jump_label, s);
     emit_load_address(ACC, "str_const0", s); //TODO: This is wrong. (Should be the str that contains the current file name.)
     emit_load_imm(T1, 21, s);
     emit_jal("_dispatch_abort", s);
-    emit_label_def(label_count, s);
+    emit_label_def(jump_label, s);
 }
 
 /*
@@ -1389,6 +1395,7 @@ void let_class::code(ostream &s) {
     variableOffsets.exitscope();
     variableTypes.exitscope();
 
+    --cur_offset;
 }
 
 #define EMIT_PLUS 0
@@ -1481,11 +1488,23 @@ void lt_class::code(ostream &s) {
 }
 
 void leq_class::code(ostream &s) {
-    //add 1 and then eval lt
-    comparison_general(e1, e2, s, true);
+    comparison_general(e1, e2, s, true); //add 1 and then eval lt
 }
 
 void eq_class::code(ostream &s) {
+    e1->code(s);
+    emit_push(ACC, s);
+
+    e2->code(s);
+    emit_move(T1, ACC, s);
+    emit_pop(ACC, s);
+    emit_move(T2, ACC, s);
+
+    emit_load_false(s);
+    emit_move(A1, ACC, s);
+    emit_load_true(s); //Load t/f in a semi stupid way to keep abstraction (yay)
+
+    emit_jal("equality_test", s);
 }
 
 void comp_class::code(ostream &s) {
@@ -1528,6 +1547,7 @@ void isvoid_class::code(ostream &s) {
 }
 
 void no_expr_class::code(ostream &s) {
+    //Should return an empty object with 0's everywhere that we care about
 }
 
 void object_class::code(ostream &s) {
