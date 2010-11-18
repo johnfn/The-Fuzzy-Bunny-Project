@@ -10,7 +10,6 @@ class A inherits B{
 class B{
      b():Int{5};
 };
-
 *)
 
 class Main inherits IO{ 
@@ -22,14 +21,16 @@ class Main inherits IO{
     main():Int { 
        {
         s <- "Object";
-        s <- "B";
+        s <- "nothingnothing";
         -- case d fails
-        case b of
-            x : Bool => s <- "Object";
-            z : B => s <- "B";
+        d <- new A;
+        case d of
+            z : B => s <- "boobooB";
             y : String => s <- "String";
+            x : Bool => s <- "Bool";
+            -- w : Int => s <- "Int";
         esac;
-        self.out_string("WHAASS");
+        self.out_string(s.concat(" | something | \n"));
         5;
         -- self.out_string(s);
         -- self.out_string("WHAT?");

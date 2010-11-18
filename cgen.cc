@@ -1533,17 +1533,18 @@ void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds
 
 void typcase_class::code(ostream &s) {
     
-    vector<int> order; //This vector contain the order of branches for the case to eval
+    vector<int> order; 
+    //This vector contain the order of branches for the case to eval
 
     for(int i=0; i< cases->len(); i++){
         branch_class *b = (branch_class*) cases->nth(i);
-        PRINT("type of this branch is : " << b->type_decl << endl);
         order.push_back(classTagLookup[b->type_decl]);
     }
     
-    //Sort the cases based on subClassRange
-    
+    //Sort the cases based on subClassRange 
     sort(order.begin(), order.end(), compRange);
+
+    //DEBUG
 
     for(vector<int>::iterator it = order.begin(); it != order.end(); ++it)
         PRINT(*it << endl);
@@ -1555,6 +1556,8 @@ void typcase_class::code(ostream &s) {
     bool first = true;
     
     expr->code(s); //Now, the result of the expr is ACC
+    
+    //Case on void run-time error
     emit_bne(ACC, ZERO, this_case, s);
     emit_load_address(ACC, "str_const0", s); //TODO: Don't hardcode this
     emit_load_imm(T1, 18, s); //TODO: Get the real line number
@@ -1567,22 +1570,14 @@ void typcase_class::code(ostream &s) {
 
         //Lame way to find the right branch
         for(int j=0; j<cases->len(); j++){
-            if(classTagLookup[((branch_class*)cases->nth(j))->name] == i){
+            PRINT(((branch_class*)(cases->nth(j)))->type_decl);
+            if(classTagLookup[((branch_class*)(cases->nth(j)))->type_decl] == classTag){
                 b = (branch_class*) cases->nth(j);
             }
         }
         
         emit_label_def(this_case, s);
-          
-/*label1:
-	lw	$t2 0($a0)
-	blt	$t2 2 label2
-	bgt	$t2 3 label2
-	move	$s1 $a0
-	la	$a0 str_const3
-	sw	$a0 28($s0)
-	b	label0
-    */
+        
         //In the first case branch, we read the class tag of the object in the ACC 
         if(first){
             emit_load(T2, 0 , ACC, s); //load classTag value from result
@@ -1593,26 +1588,24 @@ void typcase_class::code(ostream &s) {
         
         string temp = "";
 
+        //Check if it's within the class tag range
+
         stringstream ss;
         ss << subClassRange[classTag];
         temp = ss.str();
-        emit_blt(T2, temp.c_str(), this_case, s); //branch if e1 < e2
+        emit_blt(T2, temp.c_str(), this_case, s);
         
         stringstream si;
         si << classTag;
         temp = si.str();
-        emit_bgt(T2, temp.c_str(), this_case, s); //branch if e1 < e2
-        
-        stringstream sv;
-        sv << b->name;
-        temp = sv.str();
+        emit_bgt(T2, temp.c_str(), this_case, s);
 
         new_stack_variable(b->name->get_string(), &b->type_decl, s); 
         //Adds accumulator with id identifier and type type_decl as a new stack var
         
         //Run the expr
         b->expr->code(s);
-        
+         
         emit_branch(end_case, s);
     }
     
@@ -1642,11 +1635,9 @@ void remove_top_stack_variable(ostream &s){
 }
 
 void let_class::code(ostream &s) {
-
     isNoExpr = false;
     init->code(s);
     new_stack_variable(identifier->get_string(), &type_decl, s);
-
     body->code(s);
     remove_top_stack_variable(s);
 }
@@ -1787,6 +1778,7 @@ void int_const_class::code(ostream& s)
 
 void string_const_class::code(ostream& s)
 {
+  PRINT(token);
   emit_load_string(ACC,stringtable.lookup_string(token->get_string()),s);
 }
 

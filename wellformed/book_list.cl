@@ -97,7 +97,7 @@ Class Cons inherits BookList {
             out_string("wjhat");
             -- xcar alone doesn't work, Article
             a <- new Book;
-            case a of
+            case xcar of
                 dummy : Book => out_string("- dynamic type was Book -\n");
                 dummy : Article => out_string("- dynamic type was Article -\n");
             esac;
