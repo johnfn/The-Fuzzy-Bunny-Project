@@ -1059,18 +1059,30 @@ void CgenClassTable::code_init(CgenNodeP obj){
     
     variableOffsets.enterscope();
     variableTypes.enterscope();
-    
+    PRINT("Creating a class..." << endl); 
     vector<string> attrs = attrLookup[obj->name]; 
     for (int i=0;i<(int)attrs.size();i++){ //Add variable into scope at correct offset
         pair<bool, int>* p = new pair<bool, int>(true, i+3);
+        PRINT(" attr : " << attrs[i] << endl);
         variableOffsets.addid(attrs[i], p); //TODO offset+3?
     }
+    PRINT("Done adding into scope");
+    //THIS IS CRAZY RIGHT? These attrs could be from base classes, 
+    //hence, you can't access features->nth, you'd have to get their types
+    //by storing it in a table
+    //TODO: Below looks positively fishy, why check features->(i) is not a type, could
+    // have inherited attrs
     for (int i=0; i<(int)attrs.size();i++){
-        if (!features->nth(i)->method)
+        PRINT(i << endl);
+        if (!features->nth(i)->method){
+            PRINT(features->nth(i)->type_decl);
             variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
+        }
     }
+    PRINT("Done adding types");
         
     if(obj->parent != No_class){
+        PRINT("SOMETHING MYSTERIOUS");
         stringstream s;
         s << obj->parent << CLASSINIT_SUFFIX;
         emit_jal(s.str().c_str(), str);
