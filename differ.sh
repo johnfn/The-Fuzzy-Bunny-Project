@@ -35,3 +35,15 @@ if [ $OPTION = "-them" ]
 then
     /usr/class/cs143/bin/spim -file them.s
 fi
+
+if [ $OPTION = "-diff" ]
+then
+    rm usout
+    rm themout
+    rm result
+    /usr/class/cs143/bin/spim -file us.s > usout
+    /usr/class/cs143/bin/spim -file them.s > themout
+    diff usout themout > result
+    cat result
+    echo "done diffing"
+fi

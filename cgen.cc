@@ -392,14 +392,13 @@ static void emit_gc_check(char *source, ostream &s)
 }
 
 static void emit_wind(ostream &s){
-/*
-ddiu   $sp $sp -12 
-        sw  $fp 12($sp)
-            sw  $s0 8($sp)
-                sw  $ra 4($sp)
-                    addiu   $fp $sp 4
-                        move    $s0 $a0
-*/
+
+    //NOTE TO FUTURE SELF(S):
+    //
+    //If we ever adjust this to store more variables, 
+    //we need to change the argument code that puts them
+    //into the scope. Search for the tag FIXTHIS if 
+    //that happens.
 
     emit_addiu(SP, SP, -12, s);
     emit_store(FP, 3, SP, s);
@@ -410,12 +409,12 @@ ddiu   $sp $sp -12
 
 }
 
-static void emit_unwind(ostream &s){
+static void emit_unwind(ostream &s, int x){
     ///
     emit_load(FP, 3, SP, s);
     emit_load(SELF, 2, SP, s);
     emit_load(RA, 1, SP, s);
-    emit_addiu(SP, SP, 12, s);
+    emit_addiu(SP, SP, 12 + x * 4, s);
     emit_return(s);
 }
 
@@ -1007,7 +1006,7 @@ void CgenClassTable::code_init(CgenNodeP obj){
     }
 
     emit_move(ACC, SELF, str);
-    emit_unwind(str);
+    emit_unwind(str, 0);
 
     List<CgenNode> *children = obj->get_children();
 
@@ -1102,9 +1101,18 @@ void CgenClassTable::code_method(CgenNodeP obj){
             if (features->nth(i)->method){ 
                 str << obj->name << "." << features->nth(i)->name << ":" << endl;
                 emit_wind(str);
+                //MARK: "FIXTHIS"
                 method_class *method = (method_class*) features->nth(i); 
+                //Add all arguments into the scope.
+                for (int j=0;j<method->formals->len();j++){
+                    formal_class *formal = (formal_class *)method->formals->nth(j);
+                    pair<bool, int>* p = new pair<bool, int>(false, 3 + j); //Pretty sure this is right
+                    variableOffsets.addid(formal->name->get_string(), p); 
+                    variableTypes.addid(formal->name->get_string(), 
+                                       &formal->type_decl);
+                }
                 method->expr->code(str);
-                emit_unwind(str);
+                emit_unwind(str, method->formals->len() );
             } 
             //Define a method on features that returns name of method 
         }
@@ -1569,7 +1577,13 @@ void no_expr_class::code(ostream &s) {
 }
 
 void object_class::code(ostream &s) {
-    emit_load_variable(name->get_string(), s); 
+    PRINT(name->get_string() );
+    if (name == self){
+        emit_move(ACC, SELF, s);
+    } else { 
+        PRINT("it wasnt self");
+        emit_load_variable(name->get_string(), s); 
+    } 
 }
 
 
