@@ -1088,6 +1088,9 @@ void CgenClassTable::code_init(CgenNodeP obj){
         emit_jal(s.str().c_str(), str);
     }
 
+    //cout << "attrs above " << obj->name << " : " << attrsAbove[obj->name] << endl;
+
+    int featuresSeen = 0;
 
     for (int i=0; i< features->len(); i++){
         if (!features->nth(i)->method && !obj->basic() ){
@@ -1095,7 +1098,8 @@ void CgenClassTable::code_init(CgenNodeP obj){
 
             //initialize_default_value(a->type_decl, str); //TODO, hmm.
             a->init->code(str);
-            int offset = attrsAbove[obj->name] + i + 3;
+            int offset = attrsAbove[obj->name] + featuresSeen + 3;
+            ++featuresSeen;
             
             //If there's no init for a non-basic class, emit nothing, 
             //void is the default value of the object layout? FIXED

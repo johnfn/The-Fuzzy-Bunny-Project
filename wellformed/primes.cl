@@ -71,9 +71,6 @@ class Main inherits IO {
           0	-- testee isn't prime, do nothing.
 	fi;   	
 
-        out_string("stop is: ");
-        out_int(stop);
-
         if stop <= testee then 
           "halt".abort()	-- we could think of "halt" as SIGTERM.
         else 
