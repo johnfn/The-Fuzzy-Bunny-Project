@@ -1072,6 +1072,7 @@ void CgenClassTable::code_init(CgenNodeP obj){
     //by storing it in a table
     //TODO: Below looks positively fishy, why check features->(i) is not a type, could
     // have inherited attrs
+    /* 
     for (int i=0; i<(int)attrs.size();i++){
         PRINT(i << endl);
         if (!features->nth(i)->method){
@@ -1079,6 +1080,16 @@ void CgenClassTable::code_init(CgenNodeP obj){
             variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
         }
     }
+    */ 
+
+    for (int i=0; i<(int)features->len();i++){
+        PRINT(i << endl);
+        if (!features->nth(i)->method){
+            PRINT(features->nth(i)->type_decl);
+            variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
+        }
+    }
+
     PRINT("Done adding types");
         
     if(obj->parent != No_class){
@@ -1204,7 +1215,7 @@ void CgenClassTable::code_method(CgenNodeP obj){
             pair<bool, int>* p = new pair<bool, int>(true, i+3);
             variableOffsets.addid(attrs[i], p); //TODO offset+3?
         }
-        for (int i=0; i<(int)attrs.size();i++){
+        for (int i=0; i<(int)features->len();i++){
             if (!features->nth(i)->method)
                 variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
         }
@@ -1233,19 +1244,25 @@ void CgenClassTable::code_method(CgenNodeP obj){
     variableOffsets.exitscope();
     variableTypes.exitscope();
 
+    PRINT("are we going to error now?");
     List<CgenNode> *children = obj->get_children();
 
+    PRINT(obj->name->get_string());
     if (!children) return; //TODO
+    PRINT("no");
 
     stack<CgenNodeP> s;
 
     for(; children; children = children->tl()){
         s.push(children->hd());
     }
+    PRINT("dead yet?");
     while(s.size()){ 
+        PRINT(s.top()->name->get_string());
         code_method(s.top());
         s.pop();
     }
+    PRINT("nope");
 }
 
 void CgenClassTable::code()
@@ -1434,9 +1451,6 @@ void dispatch_class::code(ostream &s) {
     // Loop through the arguments and evaluate them
     // We need to push the value returned by these arguments onto the stack
    
-    //TODO: Why the hell are we pushing the arguments before checking if it's void
-    //Not that it matters because if it's void, it will just end the program.
-
     for(int i=0; i<actual->len(); i++){ //FIXED
        actual->nth(i)->code(s);
        emit_push(ACC, s);
@@ -1531,6 +1545,16 @@ void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds
     isNoExpr = false;
 }
 
+void remove_top_stack_variable(ostream &s){
+    emit_addiu(SP, SP, 4, s); //stack goes back up
+
+    variableOffsets.exitscope();
+    variableTypes.exitscope();
+
+    --cur_offset;
+}
+
+
 void typcase_class::code(ostream &s) {
     expr->code(s); //Now, the result of the expr is ACC
     
@@ -1624,6 +1648,8 @@ void typcase_class::code(ostream &s) {
         //Run the expr
         b->expr->code(s);
         
+        remove_top_stack_variable(s);
+
         emit_branch(end_case, s);
     }
     
@@ -1641,16 +1667,6 @@ void block_class::code(ostream &s) {
         body->nth(i)->code(s);
     }
 }
-
-void remove_top_stack_variable(ostream &s){
-    emit_addiu(SP, SP, 4, s); //stack goes back up
-
-    variableOffsets.exitscope();
-    variableTypes.exitscope();
-
-    --cur_offset;
-}
-
 void let_class::code(ostream &s) {
 
     isNoExpr = false;
@@ -1841,6 +1857,7 @@ void object_class::code(ostream &s) {
         emit_load_variable(name->get_string(), s); 
     } 
 }
+
 
 
 

@@ -24,10 +24,12 @@ class Main inherits IO{
         s <- "Object";
         s <- "B";
         -- case d fails
+        d <- new A;
         case b of
-            x : Bool => s <- "Object";
+            x : Bool => s <- "Bool";
+            y : B => s <- "AAA";
         esac;
-        self.out_string("WHAASS");
+        self.out_string(s);
         5;
         -- self.out_string(s);
         -- self.out_string("WHAT?");
