@@ -1163,7 +1163,7 @@ void CgenClassTable::code_method(CgenNodeP obj){
     variableOffsets.enterscope();
     variableTypes.enterscope();
 
-    if (!obj->basic() ) { 
+    if (!obj->basic()) { 
         
         curClass = obj->name;
         Features features = obj->features;
@@ -1172,6 +1172,9 @@ void CgenClassTable::code_method(CgenNodeP obj){
         //FIXME loop through the attr table that we create
 
         vector<string> attrs = attrLookup[obj->name]; 
+        for (int i=0;i<attrs.size();i++){
+            //cout << attrs[i] << endl;
+        }
         for (int i=0;i<(int)attrs.size();i++){ //Add variable into scope at correct offset
             pair<bool, int>* p = new pair<bool, int>(true, i+3);
             variableOffsets.addid(attrs[i], p); //TODO offset+3?
@@ -1790,6 +1793,7 @@ void object_class::code(ostream &s) {
         emit_load_variable(name->get_string(), s); 
     } 
 }
+
 
 
 
