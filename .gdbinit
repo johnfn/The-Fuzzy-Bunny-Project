@@ -1,4 +1,6 @@
 shell rm stuff
-shell ./lexer example.cl | ./parser | ./semant > stuff
+shell ./lexer wellformed/graph.cl | ./parser | ./semant > stuff
 file cgen 
-r -c < stuff
+#break cgen.cc:1572
+r < stuff
+

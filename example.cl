@@ -4,9 +4,14 @@
  *)
 class B inherits IO{
 };
-
 class A inherits B{
 };
+(*
+class B{
+     b():Int{5};
+};
+
+*)
 
 class Main inherits IO{ 
     b : Bool <- true;
@@ -36,6 +41,41 @@ class Main inherits IO{
         } pool;
 *)
         if s.substr(3,3) = "lo " then out_string("Something tricky is going on") else out_string("I guess it's just pointers") fi
+    i : Int <- 4;
+    *)
+        s : String;
+
+    main():Object { 
+
+        {
+            "derf";
+            out_string(s);
+        }
+
+        (* out_int( (new B).b()) *)
+(*
+            {
+                let x : Int <- 5 in out_int(x);
+                let y : Int <- 5 in out_int(y);
+                let z : Int <- 5 in out_int(z);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 2 in out_int(x);
+                let x : Int <- 2 in out_int(x);
+                let x : Int <- 2 in out_int(x);
+                let x : Int <- 2 in out_int(x);
+            }
+*)
+
+        (* if s = "Hello world." then out_string("Good\n") else out_string("bad\n") fi *)
+
+
+        (* out_string( s.substr(3, 3)) *)
         (* out_string( s.substr(3,3) ) *)
 (*
   test

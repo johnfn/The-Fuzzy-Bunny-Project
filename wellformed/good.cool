@@ -1,0 +1,25 @@
+class A{
+    thing : Int <- 5;
+    thing : Int <- 5;
+    thing : Int <- 5;
+};
+
+(*
+class A {
+    init(map : String) : SELF_TYPE {
+        {
+            (* anotherExpression = someExpr + 1; *)
+
+            case horg of 
+                blarg : Int => 6;
+                sarg : Bool => 9;
+            esac;
+
+            case horg of 
+                blarg : Int => 6;
+                sarg : Bool => 9;
+            esac;
+        }
+    };
+};
+*)

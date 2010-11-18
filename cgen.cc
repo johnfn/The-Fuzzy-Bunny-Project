@@ -197,7 +197,7 @@ static void emit_store(char *source_reg, int offset, char *dest_reg, ostream& s)
 static void emit_load_imm(char *dest_reg, int val, ostream& s)
 { s << LI << dest_reg << " " << val << endl; }
 
-static void emit_load_address(char *dest_reg, char *address, ostream& s)
+static void emit_load_address(char *dest_reg,const char *address, ostream& s)
 { s << LA << dest_reg << " " << address << endl; }
 
 static void emit_partial_load_address(char *dest_reg, ostream& s)
@@ -402,14 +402,13 @@ static void emit_gc_check(char *source, ostream &s)
 }
 
 static void emit_wind(ostream &s){
-/*
-ddiu   $sp $sp -12 
-        sw  $fp 12($sp)
-            sw  $s0 8($sp)
-                sw  $ra 4($sp)
-                    addiu   $fp $sp 4
-                        move    $s0 $a0
-*/
+
+    //NOTE TO FUTURE SELF(S):
+    //
+    //If we ever adjust this to store more variables, 
+    //we need to change the argument code that puts them
+    //into the scope. Search for the tag FIXTHIS if 
+    //that happens.
 
     emit_addiu(SP, SP, -12, s);
     emit_store(FP, 3, SP, s);
@@ -420,13 +419,12 @@ ddiu   $sp $sp -12
 
 }
 
-static void emit_unwind(ostream &s){
+static void emit_unwind(ostream &s, int x){
     ///
-    emit_move(ACC, SELF, s);
     emit_load(FP, 3, SP, s);
     emit_load(SELF, 2, SP, s);
     emit_load(RA, 1, SP, s);
-    emit_addiu(SP, SP, 12, s);
+    emit_addiu(SP, SP, 12 + x * 4, s);
     emit_return(s);
 }
 
@@ -712,7 +710,12 @@ int CgenClassTable::generate_class_tags(CgenNodeP obj, int curTag){
     
     if(obj->name == Str){
         stringclasstag = curTag;
+    }else if(obj->name == Int){
+        intclasstag = curTag;
+    }else if(obj->name == Bool){
+        boolclasstag = curTag;
     }
+
     return curTag;
 }
 
@@ -1024,6 +1027,29 @@ void CgenClassTable::code_proto(CgenNodeP obj, vector<string> attrTbl, vector<st
 
 }
 
+void initialize_default_value(Symbol type_decl, ostream &s){
+
+    if (type_decl != Int &&
+        type_decl != Str &&
+        type_decl != Bool){
+
+        emit_move(ACC, ZERO, s);
+        return;
+    }
+    s << "\tla\t" << ACC << "\t";
+    if (type_decl == Int){
+        inttable.lookup_string("0")->code_ref(s);
+        s << endl;
+    } else if (type_decl == Str){
+        stringtable.lookup_string("")->code_ref(s);
+        s << endl;
+    } else if (type_decl == Bool){
+        BoolConst(0).code_ref(s); // TODO :: test this
+    } else {
+     }
+    s << endl;
+}
+
 void CgenClassTable::code_init(CgenNodeP obj){
     str << obj->name <<  CLASSINIT_SUFFIX << ":" << endl;
     emit_wind(str);
@@ -1038,13 +1064,17 @@ void CgenClassTable::code_init(CgenNodeP obj){
     for (int i=0; i< features->len(); i++){
         if (!features->nth(i)->method && !obj->basic() ){
             attr_class *a = (attr_class *) features->nth(i);
+
+            //initialize_default_value(a->type_decl, str); //TODO, hmm.
             a->init->code(str);
             int offset = attrsAbove[obj->name] + i + 3;
 
             emit_store(ACC, offset, SELF, str);
         }
     }
-    emit_unwind(str);
+
+    emit_move(ACC, SELF, str);
+    emit_unwind(str, 0);
 
     List<CgenNode> *children = obj->get_children();
 
@@ -1139,9 +1169,18 @@ void CgenClassTable::code_method(CgenNodeP obj){
             if (features->nth(i)->method){ 
                 str << obj->name << "." << features->nth(i)->name << ":" << endl;
                 emit_wind(str);
+                //MARK: "FIXTHIS"
                 method_class *method = (method_class*) features->nth(i); 
+                //Add all arguments into the scope.
+                for (int j=0;j<method->formals->len();j++){
+                    formal_class *formal = (formal_class *)method->formals->nth(j);
+                    pair<bool, int>* p = new pair<bool, int>(false, 3 + j); //Pretty sure this is right
+                    variableOffsets.addid(formal->name->get_string(), p); 
+                    variableTypes.addid(formal->name->get_string(), 
+                                       &formal->type_decl);
+                }
                 method->expr->code(str);
-                emit_unwind(str);
+                emit_unwind(str, method->formals->len() );
             } 
             //Define a method on features that returns name of method 
         }
@@ -1290,12 +1329,12 @@ void emit_store_variable(char *id, ostream &s){
 }
 
 void emit_check_acc_null(ostream &s){
-    label_count++;
-	emit_bne(ACC, ZERO, label_count, s);
+    int jump_label = label_count++;
+	emit_bne(ACC, ZERO, jump_label, s);
     emit_load_address(ACC, "str_const0", s); //TODO: This is wrong. (Should be the str that contains the current file name.)
     emit_load_imm(T1, 21, s);
     emit_jal("_dispatch_abort", s);
-    emit_label_def(label_count, s);
+    emit_label_def(jump_label, s);
 }
 
 /*
@@ -1407,6 +1446,25 @@ bool compRange(int i, int j){
     return diff1 < diff2;
 }
 
+
+void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds accumulator with id identifier and type type_decl as a new stack var
+    int offset = ++cur_offset;
+
+    variableOffsets.enterscope();
+    variableTypes.enterscope();
+
+    pair<bool, int>* p = new pair<bool, int>(false, cur_offset);
+    variableOffsets.addid(identifier, p);
+    variableTypes.addid(identifier, type_decl);
+
+    emit_addiu(SP, SP, -4, s); //make room on the stack for the next variable 
+
+    //Initialize a default value
+    initialize_default_value(*type_decl, s);
+
+    emit_store(ACC, offset, FP, s); // store the local variable on the stack
+}
+
 void typcase_class::code(ostream &s) {
     expr->code(s); //Now, the result of the expr is ACC
     
@@ -1490,6 +1548,13 @@ void typcase_class::code(ostream &s) {
         temp = si.str();
         emit_bgt(T2, temp.c_str(), this_case, s); //branch if e1 < e2
         
+        stringstream sv;
+        sv << b->name;
+        temp = sv.str();
+
+        new_stack_variable(b->name->get_string(), &b->type_decl, s); 
+        //Adds accumulator with id identifier and type type_decl as a new stack var
+        
         //Run the expr
         b->expr->code(s);
         
@@ -1500,7 +1565,8 @@ void typcase_class::code(ostream &s) {
     //TODO: We are getting the wrong class name here.
     emit_label_def(this_case, s);
     emit_jal("_case_abort", s);
-    
+    //Up it for the next label wherever
+    label_count++;
     emit_label_def(end_case, s);
 }
 
@@ -1510,28 +1576,21 @@ void block_class::code(ostream &s) {
     }
 }
 
-void let_class::code(ostream &s) {
-    int offset = ++cur_offset;
-    variableOffsets.enterscope();
-    variableTypes.enterscope();
-
-    pair<bool, int>* p = new pair<bool, int>(false, cur_offset);
-    variableOffsets.addid(identifier->get_string(), p);
-    variableTypes.addid(identifier->get_string(), &type_decl);
-
-    emit_addiu(SP, SP, -4, s); //make room on the stack for the next variable 
-
-    init->code(s);
-
-    emit_store(ACC, offset, FP, s); // store the local variable on the stack
-
-    body->code(s);
-
+void remove_top_stack_variable(ostream &s){
     emit_addiu(SP, SP, 4, s); //stack goes back up
 
     variableOffsets.exitscope();
     variableTypes.exitscope();
 
+    --cur_offset;
+}
+
+void let_class::code(ostream &s) {
+    init->code(s);
+    new_stack_variable(identifier->get_string(), &type_decl, s);
+
+    body->code(s);
+    remove_top_stack_variable(s);
 }
 
 #define EMIT_PLUS 0
@@ -1624,11 +1683,24 @@ void lt_class::code(ostream &s) {
 }
 
 void leq_class::code(ostream &s) {
-    //add 1 and then eval lt
-    comparison_general(e1, e2, s, true);
+    comparison_general(e1, e2, s, true); //add 1 and then eval lt
 }
 
+//TODO: we should compare pointers here too (it says so in operational semantics)
 void eq_class::code(ostream &s) {
+    e1->code(s);
+    emit_push(ACC, s);
+
+    e2->code(s);
+    emit_move(T1, ACC, s);
+    emit_pop(ACC, s);
+    emit_move(T2, ACC, s);
+
+    emit_load_false(s);
+    emit_move(A1, ACC, s);
+    emit_load_true(s); //Load t/f in a semi stupid way to keep abstraction (yay)
+
+    emit_jal("equality_test", s);
 }
 
 void comp_class::code(ostream &s) {
@@ -1665,16 +1737,30 @@ void bool_const_class::code(ostream& s)
 }
 
 void new__class::code(ostream &s) {
+    string prototyp = type_name->get_string(); //I see your protObj "cleverness" and raise you a pun
+    prototyp += PROTOBJ_SUFFIX;
+
+    string classtyp = type_name->get_string();
+    classtyp += CLASSINIT_SUFFIX;
+
+    emit_load_address(ACC, prototyp.c_str(), s);
+    emit_jal("Object.copy", s);
+    emit_jal(classtyp.c_str(), s);
 }
 
 void isvoid_class::code(ostream &s) {
 }
 
 void no_expr_class::code(ostream &s) {
+    //Should return an empty object with 0's everywhere that we care about
 }
 
 void object_class::code(ostream &s) {
-    emit_load_variable(name->get_string(), s); 
+    if (name == self){
+        emit_move(ACC, SELF, s);
+    } else { 
+        emit_load_variable(name->get_string(), s); 
+    } 
 }
 
 
