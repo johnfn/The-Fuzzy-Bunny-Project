@@ -1390,11 +1390,7 @@ void assign_class::code(ostream &s) {
     emit_store_variable(name->get_string(), s);
 }
 
-void static_dispatch_class::code(ostream &s) {
-    s << "YAYYAYA" << endl;
-}
 
-//SEGFAULT
 int lookupMethod(Symbol classname, Symbol name){
     vector<pair<string, string> > vect = *symToNode[classname];
     for (int i=0;i< (int)vect.size(); i++){
@@ -1402,10 +1398,34 @@ int lookupMethod(Symbol classname, Symbol name){
             return i;
         }
     }
-    return 99999999;// this will never happen
-//map<Symbol, *vector<pair<string, string> > > symToNode;
+   return 99999999;// this will never happen
 }
 
+//TODO: Check this
+//Do we have to use type_name for something? 
+void static_dispatch_class::code(ostream &s) {
+    for(int i=0; i<actual->len(); i++){ //FIXED
+       actual->nth(i)->code(s);
+       emit_push(ACC, s);
+    }
+    
+    bool self = expr->type == SELF_TYPE;
+
+    expr->code(s);
+    
+    emit_check_acc_null(s);
+
+    emit_load(T1, 2, ACC, s);
+    int offset;
+    if(self){
+        offset = lookupMethod(curClass, name);
+    }else{
+        offset = lookupMethod(expr->type, name);
+    }
+
+    emit_load(T1, offset, T1, s);
+    emit_jalr(T1, s);
+}
 void dispatch_class::code(ostream &s) {
     
     //TODO Aiken said that this was tricky because I think you evaluate the object last.
@@ -1413,28 +1433,25 @@ void dispatch_class::code(ostream &s) {
 
     // Loop through the arguments and evaluate them
     // We need to push the value returned by these arguments onto the stack
-    
-    
+   
+    //TODO: Why the hell are we pushing the arguments before checking if it's void
+    //Not that it matters because if it's void, it will just end the program.
+
     for(int i=0; i<actual->len(); i++){ //FIXED
        actual->nth(i)->code(s);
        emit_push(ACC, s);
     }
     
-    //Check if it's
     bool self = expr->type == SELF_TYPE;
 
     expr->code(s);
     
-    //TODO Check if the object is null
-
     emit_check_acc_null(s);
 
     emit_load(T1, 2, ACC, s);
     int offset;
     if(self){
-        //curClass
         offset = lookupMethod(curClass, name);
-        PRINT("CUR CLASS");   
     }else{
         PRINT("NOT CUR CLASS");
         
@@ -1534,8 +1551,8 @@ void typcase_class::code(ostream &s) {
    
     //Now, we generate the code
 
-    int end_case = ++label_count; //This is for when we return to outside case
-    int this_case = ++label_count;
+    int end_case = label_count++; //This is for when we return to outside case
+    int this_case = label_count++;
     bool first = true;
     
     emit_bne(ACC, ZERO, this_case, s);
@@ -1583,7 +1600,7 @@ void typcase_class::code(ostream &s) {
             first = false;
         }
 
-        this_case = ++label_count; //incrementing to find the next case
+        this_case = label_count++; //incrementing to find the next case
         
         string temp = "";
 
