@@ -1048,6 +1048,7 @@ void initialize_default_value(Symbol type_decl, ostream &s){
         BoolConst(0).code_ref(s); // TODO :: test this
     } 
     s << endl;
+    //emit_jal("Object.copy", s);
 }
 
 void CgenClassTable::code_init(CgenNodeP obj){
@@ -1244,25 +1245,19 @@ void CgenClassTable::code_method(CgenNodeP obj){
     variableOffsets.exitscope();
     variableTypes.exitscope();
 
-    PRINT("are we going to error now?");
     List<CgenNode> *children = obj->get_children();
 
-    PRINT(obj->name->get_string());
     if (!children) return; //TODO
-    PRINT("no");
 
     stack<CgenNodeP> s;
 
     for(; children; children = children->tl()){
         s.push(children->hd());
     }
-    PRINT("dead yet?");
     while(s.size()){ 
-        PRINT(s.top()->name->get_string());
         code_method(s.top());
         s.pop();
     }
-    PRINT("nope");
 }
 
 void CgenClassTable::code()
@@ -1539,9 +1534,9 @@ void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds
     if (isNoExpr) { 
         //Init default value
         initialize_default_value(*type_decl, s);
-    } else { 
-        emit_store(ACC, offset, FP, s); // store the local variable on the stack
-    }
+    } 
+    emit_store(ACC, offset, FP, s); // store the local variable on the stack
+    
     isNoExpr = false;
 }
 
@@ -1670,10 +1665,14 @@ void block_class::code(ostream &s) {
 void let_class::code(ostream &s) {
 
     isNoExpr = false;
+    PRINT("let init");
     init->code(s);
+    PRINT("let var");
     new_stack_variable(identifier->get_string(), &type_decl, s);
 
+    PRINT("let body");
     body->code(s);
+    PRINT("let end");
     remove_top_stack_variable(s);
 }
 

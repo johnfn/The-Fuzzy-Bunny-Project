@@ -64,19 +64,19 @@ class CellularAutomaton inherits IO {
     evolve() : SELF_TYPE {
         (let position : Int in
         (let num : Int <- num_cells() in
-        (let temp : String in
+        (let temp : String <- "" in (* Not originally part of code *)
             {
                 out_string("what loop");
                 position <- 0;
                 out_int(num);
                 while position < num loop
                     {
-                        out_string("some evolution");
                         temp <- temp.concat(cell_at_next_evolution(position));
                         position <- position + 1;
                         out_int(position);
                     }
                 pool;
+                out_string(temp);
                 population_map <- temp;
                 self;
             }
