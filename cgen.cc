@@ -40,6 +40,7 @@ extern void emit_string_constant(ostream& str, char *s);
 extern int cgen_debug;
 int label_count = 0;
 int cur_offset = 0;
+bool isNoExpr = false; //This goes off the deep end from bad to horrible style
 
 map<Symbol, vector<pair<string, string> >* > symToNode;
 map<Symbol, int> attrsAbove;
@@ -1002,8 +1003,7 @@ void initialize_default_value(Symbol type_decl, ostream &s){
         s << endl;
     } else if (type_decl == Bool){
         BoolConst(0).code_ref(s); // TODO :: test this
-    } else {
-     }
+    } 
     s << endl;
 }
 
@@ -1423,9 +1423,12 @@ void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds
     //Initialize a default value
 
 
-    initialize_default_value(*type_decl, s);
-
-    emit_store(ACC, offset, FP, s); // store the local variable on the stack
+    if (isNoExpr) { 
+        initialize_default_value(*type_decl, s);
+    } else { 
+        emit_store(ACC, offset, FP, s); // store the local variable on the stack
+    }
+    isNoExpr = false;
 }
 
 void remove_top_stack_variable(ostream &s){
@@ -1438,6 +1441,8 @@ void remove_top_stack_variable(ostream &s){
 }
 
 void let_class::code(ostream &s) {
+
+    isNoExpr = false;
     init->code(s);
     new_stack_variable(identifier->get_string(), &type_decl, s);
 
@@ -1604,6 +1609,7 @@ void isvoid_class::code(ostream &s) {
 }
 
 void no_expr_class::code(ostream &s) {
+    isNoExpr = true;
     //Should return an empty object with 0's everywhere that we care about
 }
 
