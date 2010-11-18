@@ -997,10 +997,8 @@ void initialize_default_value(Symbol type_decl, ostream &s){
     s << "\tla\t" << ACC << "\t";
     if (type_decl == Int){
         inttable.lookup_string("0")->code_ref(s);
-        s << endl;
     } else if (type_decl == Str){
         stringtable.lookup_string("")->code_ref(s);
-        s << endl;
     } else if (type_decl == Bool){
         BoolConst(0).code_ref(s); // TODO :: test this
     } 

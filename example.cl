@@ -17,16 +17,19 @@ class Main inherits IO{
 (*
     b : Bool <- true;
     c : Bool <- true;
-    i : Int <- 4;
     *)
-        s : String;
+--        s : String;
 
+    --f():Int{5};
+
+
+    i : Int <- 9;
     main():Object { 
 
-        {
-            "derf";
-            out_string(s);
-        }
+        out_int( if i=4 then 4 else if i=5 then 5 else if i=1 then 1 else 0 fi fi fi )
+        (* {
+            out_string( in_string() );
+        } *)
 
         (* out_int( (new B).b()) *)
 (*
