@@ -21,8 +21,20 @@ class Main inherits IO{
     main():Object { 
 
             {
-                s <- s.substr(3, 3);
-                if s = "lo " then out_string("Something tricky is going on") else out_string("This is bad >_>") fi;
+                let x : Int <- 5 in out_int(x);
+                let y : Int <- 5 in out_int(y);
+                let z : Int <- 5 in out_int(z);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 5 in out_int(x);
+                let x : Int <- 2 in out_int(x);
+                let x : Int <- 2 in out_int(x);
+                let x : Int <- 2 in out_int(x);
+                let x : Int <- 2 in out_int(x);
             }
 
         (* if s = "Hello world." then out_string("Good\n") else out_string("bad\n") fi *)

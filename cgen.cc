@@ -1373,29 +1373,38 @@ void block_class::code(ostream &s) {
     }
 }
 
-void let_class::code(ostream &s) {
+void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds accumulator with id identifier and type type_decl as a new stack var
     int offset = ++cur_offset;
+
     variableOffsets.enterscope();
     variableTypes.enterscope();
 
     pair<bool, int>* p = new pair<bool, int>(false, cur_offset);
-    variableOffsets.addid(identifier->get_string(), p);
-    variableTypes.addid(identifier->get_string(), &type_decl);
+    variableOffsets.addid(identifier, p);
+    variableTypes.addid(identifier, type_decl);
 
     emit_addiu(SP, SP, -4, s); //make room on the stack for the next variable 
 
-    init->code(s);
 
     emit_store(ACC, offset, FP, s); // store the local variable on the stack
+}
 
-    body->code(s);
-
+void remove_top_stack_variable(ostream &s){
     emit_addiu(SP, SP, 4, s); //stack goes back up
 
     variableOffsets.exitscope();
     variableTypes.exitscope();
 
     --cur_offset;
+}
+
+void let_class::code(ostream &s) {
+
+    init->code(s);
+    new_stack_variable(identifier->get_string(), &type_decl, s);
+
+    body->code(s);
+    remove_top_stack_variable(s);
 }
 
 #define EMIT_PLUS 0
@@ -1491,6 +1500,7 @@ void leq_class::code(ostream &s) {
     comparison_general(e1, e2, s, true); //add 1 and then eval lt
 }
 
+//TODO: we should compare pointers here too (it says so in operational semantics)
 void eq_class::code(ostream &s) {
     e1->code(s);
     emit_push(ACC, s);
