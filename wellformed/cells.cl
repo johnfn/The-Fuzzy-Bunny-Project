@@ -14,6 +14,7 @@ class CellularAutomaton inherits IO {
    
     print() : SELF_TYPE {
         {
+            out_string("\nYO HERE \n");
             out_string(population_map.concat("\n"));
             self;
         }
@@ -46,6 +47,7 @@ class CellularAutomaton inherits IO {
     (* a cell will live if exactly 1 of itself and it's immediate
        neighbors are alive *)
     cell_at_next_evolution(position : Int) : String {
+        { out_string("in next evol");
         if (if cell(position) = "X" then 1 else 0 fi
             + if cell_left_neighbor(position) = "X" then 1 else 0 fi
             + if cell_right_neighbor(position) = "X" then 1 else 0 fi
@@ -54,7 +56,8 @@ class CellularAutomaton inherits IO {
             "X"
         else
             "."
-        fi
+        fi;
+        }
     };
    
     evolve() : SELF_TYPE {
@@ -62,10 +65,15 @@ class CellularAutomaton inherits IO {
         (let num : Int <- num_cells() in
         (let temp : String in
             {
+                out_string("what loop");
+                position <- 0;
+                out_int(num);
                 while position < num loop
                     {
-                        temp <- temp.concat(cell_at_next_evolution(position));
+                        out_string("some evolution");
+                        temp <- cell_at_next_evolution(position);
                         position <- position + 1;
+                        out_int(position);
                     }
                 pool;
                 population_map <- temp;
@@ -88,6 +96,7 @@ class Main inherits IO{
 
                 while 0 < countdown loop
                     {
+                        out_string("some countdown");
                         cells.evolve();
                         cells.print();
                         countdown <- countdown - 1;

@@ -1481,6 +1481,7 @@ void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds
     //Initialize a default value
 
     if (isNoExpr) { 
+        //Init default value
         initialize_default_value(*type_decl, s);
     } else { 
         emit_store(ACC, offset, FP, s); // store the local variable on the stack
@@ -1780,6 +1781,7 @@ void isvoid_class::code(ostream &s) {
 
 void no_expr_class::code(ostream &s) {
     isNoExpr = true;
+    PRINT("IS NO EXPR");
     //Should return an empty object with 0's everywhere that we care about
 }
 
