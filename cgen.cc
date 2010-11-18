@@ -723,9 +723,9 @@ int CgenClassTable::generate_class_tags(CgenNodeP obj, int curTag){
 CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
 {
    // TODO: Change this
-   stringclasstag = 5 /* Change to your String class tag here */;
-   intclasstag =    3 /* Change to your Int class tag here */;
-   boolclasstag =   4 /* Change to your Bool class tag here */;
+   stringclasstag = 99 /* Change to your String class tag here */;
+   intclasstag =    99 /* Change to your Int class tag here */;
+   boolclasstag =   99 /* Change to your Bool class tag here */;
 
    this->curNumber = 6;
 
@@ -923,6 +923,8 @@ void CgenNode::set_parentnd(CgenNodeP p)
   parentnd = p;
 }
 
+Symbol curClass = Object;
+
 void CgenClassTable::code_nameTab(CgenNodeP obj){
 
     str << WORD;
@@ -1040,10 +1042,8 @@ void initialize_default_value(Symbol type_decl, ostream &s){
     s << "\tla\t" << ACC << "\t";
     if (type_decl == Int){
         inttable.lookup_string("0")->code_ref(s);
-        s << endl;
     } else if (type_decl == Str){
         stringtable.lookup_string("")->code_ref(s);
-        s << endl;
     } else if (type_decl == Bool){
         BoolConst(0).code_ref(s); // TODO :: test this
     } 
@@ -1053,6 +1053,8 @@ void initialize_default_value(Symbol type_decl, ostream &s){
 void CgenClassTable::code_init(CgenNodeP obj){
     str << obj->name <<  CLASSINIT_SUFFIX << ":" << endl;
     emit_wind(str);
+    curClass = obj->name;
+    
     if(obj->parent != No_class){
         stringstream s;
         s << obj->parent << CLASSINIT_SUFFIX;
@@ -1138,7 +1140,6 @@ void CgenClassTable::code_dispatch(CgenNodeP obj, vector<pair<string, string> > 
 
 }
 
-Symbol curClass = Object;
 
 void CgenClassTable::code_method(CgenNodeP obj){
 
@@ -1349,6 +1350,7 @@ void static_dispatch_class::code(ostream &s) {
     s << "YAYYAYA" << endl;
 }
 
+//SEGFAULT
 int lookupMethod(Symbol classname, Symbol name){
     vector<pair<string, string> > vect = *symToNode[classname];
     for (int i=0;i< (int)vect.size(); i++){
@@ -1392,8 +1394,10 @@ void dispatch_class::code(ostream &s) {
     if(self){
         //curClass
         offset = lookupMethod(curClass, name);
-        
+        PRINT("CUR CLASS");   
     }else{
+        PRINT("NOT CUR CLASS");
+        
         offset = lookupMethod(expr->type, name);
     }
 

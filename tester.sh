@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 
-for f in examples/*
+for f in wellformed/*
 do
   amt=$(($amt+1))
 

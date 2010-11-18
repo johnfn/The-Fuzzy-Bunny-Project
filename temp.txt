@@ -1,0 +1,55 @@
+make: `cgen' is up to date.
+SPIM Version 6.5 of January 4, 2003
+Copyright 1990-2003 by James R. Larus (larus@cs.wisc.edu).
+All Rights Reserved.
+See the file README for a full copyright notice.
+Loaded: /usr/class/cs143/lib/trap.handler
+The following symbols are undefined:
+Vertice.add_out
+BoolOp.and
+Parse.a2i_aux
+EList.cons
+Parse.c2i
+VCons.print
+ECons.tail
+VCons.head
+ECons.isNil
+Graph.add_vertice
+Vertice.outgoing
+VCons_init
+Graph.print_E
+Graph.print_V
+Main.main
+VList.tail
+Parse.a2i
+VList.isNil
+Vertice.print
+ECons.head
+Parse.parse_line
+Vertice.number
+ECons.print
+ECons_init
+EList.tail
+VList.head
+Edge_init
+VList.print
+Parse.read_input
+VCons.init
+Vertice_init
+VList_init
+EList.isNil
+Edge.print
+EList.append
+BoolOp.or
+EList.head
+ECons.init
+VList.cons
+EList_init
+Edge.init
+EList.print
+Vertice.init
+VCons.isNil
+VCons.tail
+
+Stats -- #instructions : 222
+         #reads : 39  #writes 37  #branches 45  #other 101
