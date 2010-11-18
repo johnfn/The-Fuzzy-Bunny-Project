@@ -27,6 +27,8 @@
 #include <sstream>
 #include <stack>
 #include <map>
+#include <stdlib.h>
+#include <stdio.h>
 
 using std::map;
 using std::stringstream;
@@ -45,7 +47,8 @@ bool isNoExpr = false; //This goes off the deep end from bad to horrible style
 map<Symbol, vector<pair<string, string> >* > symToNode;
 map<Symbol, int> attrsAbove;
 map<Symbol, vector<string> > attrLookup;
-
+map<int, int> subClassRange; //This is a mapping from classTag to minimum class Tag that is a subclass of this class
+map<Symbol, int> classTagLookup;
 
                     //isHeap,offset
 SymbolTable<string,pair<bool, int> > variableOffsets; 
@@ -310,9 +313,16 @@ static void emit_bleq(char *src1, char *src2, int label, ostream &s)
   s << endl;
 }
 
-static void emit_blt(char *src1, char *src2, int label, ostream &s)
+static void emit_blt(const char *src1, const char *src2, int label, ostream &s)
 {
   s << BLT << src1 << " " << src2 << " ";
+  emit_label_ref(label,s);
+  s << endl;
+}
+
+static void emit_bgt(const char *src1, const char *src2, int label, ostream &s)
+{
+  s << BGT << src1 << " " << src2 << " ";
   emit_label_ref(label,s);
   s << endl;
 }
@@ -675,9 +685,44 @@ void CgenClassTable::code_constants()
   code_bools(boolclasstag);
 }
 
+int CgenClassTable::generate_class_tags(CgenNodeP obj, int curTag){
+
+    List<CgenNode> *children = obj->get_children();
+    
+    if(children){ 
+        for(; children; children = children->tl()){
+            curTag = generate_class_tags(children->hd(), curTag);
+        }
+    }
+
+    curTag++;
+    PRINT(" class " << obj->name << " has " << curTag);
+    
+    classTagLookup[obj->name] = curTag;
+    
+    children = obj->get_children();
+    if(children){
+        subClassRange[curTag] = classTagLookup[children->hd()->name];
+    }else{
+        subClassRange[curTag] = curTag;
+    }
+    
+    PRINT(" subclass range for " << obj->name << "  " << curTag << " - " << subClassRange[subClassRange[curTag]]);
+    
+    if(obj->name == Str){
+        stringclasstag = curTag;
+    }else if(obj->name == Int){
+        intclasstag = curTag;
+    }else if(obj->name == Bool){
+        boolclasstag = curTag;
+    }
+
+    return curTag;
+}
 
 CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
 {
+   // TODO: Change this
    stringclasstag = 5 /* Change to your String class tag here */;
    intclasstag =    3 /* Change to your Int class tag here */;
    boolclasstag =   4 /* Change to your Bool class tag here */;
@@ -689,6 +734,7 @@ CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
    install_basic_classes();
    install_classes(classes);
    build_inheritance_tree();
+   generate_class_tags(this->root(), 0);
 
    code();
    exitscope();
@@ -923,14 +969,11 @@ void CgenClassTable::code_proto(CgenNodeP obj, vector<string> attrTbl, vector<st
 
     str << WORD << "-1" << endl;
     str << obj->name << "_protObj:" <<  endl;
-
-    ++curNumber;
-    if (curNumber == 8) { 
-        str << WORD << 5 << endl; //TODO
-    } else { 
-        str << WORD << curNumber << endl; //TODO
-    }
+    str << WORD << classTagLookup[obj->name] << endl; //TODO
     int objSize = 3;
+    
+    PRINT("Generating for class : " << obj->name);
+
     Features features = obj->features; 
     for(int i=0; i < features->len(); i++){
         if(!features->nth(i)->method){
@@ -1297,7 +1340,6 @@ void emit_check_acc_null(ostream &s){
  */
 void assign_class::code(ostream &s) {
     expr->code(s); //result stored in ACC
-
     emit_store_variable(name->get_string(), s);
 }
 
@@ -1396,13 +1438,10 @@ void loop_class::code(ostream &s) {
 
 }
 
-void typcase_class::code(ostream &s) {
-}
-
-void block_class::code(ostream &s) {
-    for (int i=0;i<body->len();i++){
-        body->nth(i)->code(s);
-    }
+bool compRange(int i, int j){
+    int diff1 = i - subClassRange[i];
+    int diff2 = j - subClassRange[j];
+    return diff1 < diff2;
 }
 
 
@@ -1420,13 +1459,123 @@ void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds
 
     //Initialize a default value
 
-
     if (isNoExpr) { 
         initialize_default_value(*type_decl, s);
     } else { 
         emit_store(ACC, offset, FP, s); // store the local variable on the stack
     }
     isNoExpr = false;
+}
+
+void typcase_class::code(ostream &s) {
+    expr->code(s); //Now, the result of the expr is ACC
+    
+    vector<int> order; //This vector contain the order of branches for the case to eval
+
+    for(int i=0; i< cases->len(); i++){
+        branch_class *b = (branch_class*) cases->nth(i);
+        PRINT("type of this branch is : " << b->type_decl << endl);
+        order.push_back(classTagLookup[b->type_decl]);
+    }
+    
+    //Sort the cases based on subClassRange
+    
+    sort(order.begin(), order.end(), compRange);
+
+    for(vector<int>::iterator it = order.begin(); it != order.end(); ++it)
+        PRINT(*it << endl);
+   
+    //Now, we generate the code
+
+    int end_case = ++label_count; //This is for when we return to outside case
+    int this_case = ++label_count;
+    bool first = true;
+    
+    emit_bne(ACC, ZERO, this_case, s);
+    emit_load_address(ACC, "str_const0", s); //TODO: Don't hardcode this
+    emit_load_imm(T1, 18, s); //TODO: Get the real line number
+    emit_jal("_case_abort2", s);
+
+    //Check if ACC is void
+    //call _case_abort2
+    //put line number in T1
+    //put filename in A0
+    /*
+    la	$a0 str_const0
+	li	$t1 18
+	jal	_case_abort2
+    */
+    
+    for(int i=0; i < order.size(); i++){
+        
+        int classTag = order[i];
+        branch_class *b;
+
+        //Lame way to find the right branch
+        for(int j=0; j<cases->len(); j++){
+            if(classTagLookup[((branch_class*)cases->nth(j))->name] == i){
+                b = (branch_class*) cases->nth(j);
+            }
+        }
+        
+        emit_label_def(this_case, s);
+          
+/*label1:
+	lw	$t2 0($a0)
+	blt	$t2 2 label2
+	bgt	$t2 3 label2
+	move	$s1 $a0
+	la	$a0 str_const3
+	sw	$a0 28($s0)
+	b	label0
+    */
+        //In the first case branch, we read the class tag of the object in the ACC 
+        if(first){
+            emit_load(T2, 0 , ACC, s); //load int value from result
+
+            first = false;
+        }
+
+        this_case = ++label_count; //incrementing to find the next case
+        
+        string temp = "";
+
+        stringstream ss;
+        ss << subClassRange[classTag];
+        temp = ss.str();
+        emit_blt(T2, temp.c_str(), this_case, s); //branch if e1 < e2
+        
+        stringstream si;
+        si << classTag;
+        temp = si.str();
+        emit_bgt(T2, temp.c_str(), this_case, s); //branch if e1 < e2
+        
+        stringstream sv;
+        sv << b->name;
+        temp = sv.str();
+
+        new_stack_variable(b->name->get_string(), &b->type_decl, s); 
+        //Adds accumulator with id identifier and type type_decl as a new stack var
+        
+        //Run the expr
+        b->expr->code(s);
+        
+        emit_branch(end_case, s);
+    }
+    
+    //call _case_abort here, this branch is to throw a run-time error if nothing matches
+    //TODO: We are getting the wrong class name here.
+    emit_label_def(this_case, s);
+    emit_jal("_case_abort", s);
+    //Up it for the next label wherever
+    label_count++;
+    emit_label_def(end_case, s);
+}
+
+void block_class::code(ostream &s) {
+    for (int i=0;i<body->len();i++){
+        body->nth(i)->code(s);
+    }
 }
 
 void remove_top_stack_variable(ostream &s){
@@ -1618,5 +1767,6 @@ void object_class::code(ostream &s) {
         emit_load_variable(name->get_string(), s); 
     } 
 }
+
 
 

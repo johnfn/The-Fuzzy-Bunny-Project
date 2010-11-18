@@ -44,6 +44,7 @@ private:
    void code_init(CgenNodeP obj);
    void code_nameTab(CgenNodeP obj);
    void code_method(CgenNodeP obj);
+   int generate_class_tags(CgenNodeP obj, int curTag);
 // The following creates an inheritance graph from
 // a list of classes.  The graph is implemented as
 // a tree of `CgenNode', and class names are placed
