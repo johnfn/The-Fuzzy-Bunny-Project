@@ -194,7 +194,7 @@ static void emit_store(char *source_reg, int offset, char *dest_reg, ostream& s)
 static void emit_load_imm(char *dest_reg, int val, ostream& s)
 { s << LI << dest_reg << " " << val << endl; }
 
-static void emit_load_address(char *dest_reg, char *address, ostream& s)
+static void emit_load_address(char *dest_reg,const char *address, ostream& s)
 { s << LA << dest_reg << " " << address << endl; }
 
 static void emit_partial_load_address(char *dest_reg, ostream& s)
@@ -412,7 +412,6 @@ ddiu   $sp $sp -12
 
 static void emit_unwind(ostream &s){
     ///
-    emit_move(ACC, SELF, s);
     emit_load(FP, 3, SP, s);
     emit_load(SELF, 2, SP, s);
     emit_load(RA, 1, SP, s);
@@ -1006,6 +1005,8 @@ void CgenClassTable::code_init(CgenNodeP obj){
             emit_store(ACC, offset, SELF, str);
         }
     }
+
+    emit_move(ACC, SELF, str);
     emit_unwind(str);
 
     List<CgenNode> *children = obj->get_children();
@@ -1385,7 +1386,6 @@ void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds
 
     emit_addiu(SP, SP, -4, s); //make room on the stack for the next variable 
 
-
     emit_store(ACC, offset, FP, s); // store the local variable on the stack
 }
 
@@ -1399,7 +1399,6 @@ void remove_top_stack_variable(ostream &s){
 }
 
 void let_class::code(ostream &s) {
-
     init->code(s);
     new_stack_variable(identifier->get_string(), &type_decl, s);
 
@@ -1551,6 +1550,15 @@ void bool_const_class::code(ostream& s)
 }
 
 void new__class::code(ostream &s) {
+    string prototyp = type_name->get_string(); //I see your protObj "cleverness" and raise you a pun
+    prototyp += PROTOBJ_SUFFIX;
+
+    string classtyp = type_name->get_string();
+    classtyp += CLASSINIT_SUFFIX;
+
+    emit_load_address(ACC, prototyp.c_str(), s);
+    emit_jal("Object.copy", s);
+    emit_jal(classtyp.c_str(), s);
 }
 
 void isvoid_class::code(ostream &s) {

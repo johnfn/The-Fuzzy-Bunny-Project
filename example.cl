@@ -3,15 +3,15 @@
     as possible.
  *)
 (*
-class B{
-    b():Int{5};
-};
+
 
 class A inherits B{
     x : B <- new B;
 };
 *)
-
+class B{
+     b():Int{5};
+};
 class Main inherits IO{ 
     b : Bool <- true;
     c : Bool <- true;
@@ -20,6 +20,8 @@ class Main inherits IO{
 
     main():Object { 
 
+        out_int( (new B).b())
+(*
             {
                 let x : Int <- 5 in out_int(x);
                 let y : Int <- 5 in out_int(y);
@@ -36,6 +38,7 @@ class Main inherits IO{
                 let x : Int <- 2 in out_int(x);
                 let x : Int <- 2 in out_int(x);
             }
+*)
 
         (* if s = "Hello world." then out_string("Good\n") else out_string("bad\n") fi *)
 
