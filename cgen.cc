@@ -1084,8 +1084,17 @@ void CgenClassTable::code_init(CgenNodeP obj){
             //initialize_default_value(a->type_decl, str); //TODO, hmm.
             a->init->code(str);
             int offset = attrsAbove[obj->name] + i + 3;
-
-            emit_store(ACC, offset, SELF, str);
+            
+            //If there's no init for a non-basic class, emit nothing, 
+            //void is the default value of the object layout? FIXED
+            
+            if(isNoExpr && a->type_decl != Int &&
+                        a->type_decl != Str &&
+                        a->type_decl != Bool){
+            
+            }else{
+                emit_store(ACC, offset, SELF, str);
+            }
         }
     }
 

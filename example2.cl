@@ -23,8 +23,8 @@ class Main inherits IO{
        {
         s <- "Object";
         s <- "B";
-
-        case s of
+        -- case d fails
+        case "cool" of
             x : Bool => s <- "Object";
             z : B => s <- "B";
             y : String => s <- "String";

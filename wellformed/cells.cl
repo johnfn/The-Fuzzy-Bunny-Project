@@ -57,6 +57,7 @@ class CellularAutomaton inherits IO {
         else
             "."
         fi;
+         out_string("done evol");
         }
     };
    
@@ -71,7 +72,7 @@ class CellularAutomaton inherits IO {
                 while position < num loop
                     {
                         out_string("some evolution");
-                        temp <- cell_at_next_evolution(position);
+                        temp <- temp.concat(cell_at_next_evolution(position));
                         position <- position + 1;
                         out_int(position);
                     }
