@@ -36,7 +36,7 @@ class Main inherits IO {
       2;
     };
 
-  testee : Int <- out;	-- testee is a number to be tested for primeness.   
+  testee : Int <- 5;	-- testee is a number to be tested for primeness.   
 
   divisor : Int;	-- divisor is a number which may factor testee.
 

@@ -723,9 +723,9 @@ int CgenClassTable::generate_class_tags(CgenNodeP obj, int curTag){
 CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
 {
    // TODO: Change this
-   stringclasstag = 5 /* Change to your String class tag here */;
-   intclasstag =    3 /* Change to your Int class tag here */;
-   boolclasstag =   4 /* Change to your Bool class tag here */;
+   stringclasstag = 99 /* Change to your String class tag here */;
+   intclasstag =    99 /* Change to your Int class tag here */;
+   boolclasstag =   99 /* Change to your Bool class tag here */;
 
    this->curNumber = 6;
 
@@ -923,6 +923,8 @@ void CgenNode::set_parentnd(CgenNodeP p)
   parentnd = p;
 }
 
+Symbol curClass = Object;
+
 void CgenClassTable::code_nameTab(CgenNodeP obj){
 
     str << WORD;
@@ -1051,13 +1053,29 @@ void initialize_default_value(Symbol type_decl, ostream &s){
 void CgenClassTable::code_init(CgenNodeP obj){
     str << obj->name <<  CLASSINIT_SUFFIX << ":" << endl;
     emit_wind(str);
+    curClass = obj->name;
+    
+    Features features = obj->features;
+    
+    variableOffsets.enterscope();
+    variableTypes.enterscope();
+    
+    vector<string> attrs = attrLookup[obj->name]; 
+    for (int i=0;i<(int)attrs.size();i++){ //Add variable into scope at correct offset
+        pair<bool, int>* p = new pair<bool, int>(true, i+3);
+        variableOffsets.addid(attrs[i], p); //TODO offset+3?
+    }
+    for (int i=0; i<(int)attrs.size();i++){
+        if (!features->nth(i)->method)
+            variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
+    }
+        
     if(obj->parent != No_class){
         stringstream s;
         s << obj->parent << CLASSINIT_SUFFIX;
         emit_jal(s.str().c_str(), str);
     }
 
-    Features features = obj->features;
 
     for (int i=0; i< features->len(); i++){
         if (!features->nth(i)->method && !obj->basic() ){
@@ -1073,6 +1091,9 @@ void CgenClassTable::code_init(CgenNodeP obj){
 
     emit_move(ACC, SELF, str);
     emit_unwind(str, 0);
+
+    variableOffsets.exitscope();
+    variableTypes.exitscope();
 
     List<CgenNode> *children = obj->get_children();
 
@@ -1136,7 +1157,6 @@ void CgenClassTable::code_dispatch(CgenNodeP obj, vector<pair<string, string> > 
 
 }
 
-Symbol curClass = Object;
 
 void CgenClassTable::code_method(CgenNodeP obj){
 
@@ -1150,8 +1170,6 @@ void CgenClassTable::code_method(CgenNodeP obj){
         //add all attrs to symtab
         
         //FIXME loop through the attr table that we create
-
-    //map<Symbol, vector<string> > attrLookup;
 
         vector<string> attrs = attrLookup[obj->name]; 
         for (int i=0;i<(int)attrs.size();i++){ //Add variable into scope at correct offset
@@ -1347,6 +1365,7 @@ void static_dispatch_class::code(ostream &s) {
     s << "YAYYAYA" << endl;
 }
 
+//SEGFAULT
 int lookupMethod(Symbol classname, Symbol name){
     vector<pair<string, string> > vect = *symToNode[classname];
     for (int i=0;i< (int)vect.size(); i++){
@@ -1390,8 +1409,10 @@ void dispatch_class::code(ostream &s) {
     if(self){
         //curClass
         offset = lookupMethod(curClass, name);
-        
+        PRINT("CUR CLASS");   
     }else{
+        PRINT("NOT CUR CLASS");
+        
         offset = lookupMethod(expr->type, name);
     }
 
