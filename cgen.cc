@@ -984,6 +984,29 @@ void CgenClassTable::code_proto(CgenNodeP obj, vector<string> attrTbl, vector<st
 
 }
 
+void initialize_default_value(Symbol type_decl, ostream &s){
+
+    if (type_decl != Int &&
+        type_decl != Str &&
+        type_decl != Bool){
+
+        emit_move(ACC, ZERO, s);
+        return;
+    }
+    s << "\tla\t" << ACC << "\t";
+    if (type_decl == Int){
+        inttable.lookup_string("0")->code_ref(s);
+        s << endl;
+    } else if (type_decl == Str){
+        stringtable.lookup_string("")->code_ref(s);
+        s << endl;
+    } else if (type_decl == Bool){
+        BoolConst(0).code_ref(s); // TODO :: test this
+    } else {
+     }
+    s << endl;
+}
+
 void CgenClassTable::code_init(CgenNodeP obj){
     str << obj->name <<  CLASSINIT_SUFFIX << ":" << endl;
     emit_wind(str);
@@ -998,6 +1021,8 @@ void CgenClassTable::code_init(CgenNodeP obj){
     for (int i=0; i< features->len(); i++){
         if (!features->nth(i)->method && !obj->basic() ){
             attr_class *a = (attr_class *) features->nth(i);
+
+            //initialize_default_value(a->type_decl, str); //TODO, hmm.
             a->init->code(str);
             int offset = attrsAbove[obj->name] + i + 3;
 
@@ -1382,6 +1407,7 @@ void block_class::code(ostream &s) {
     }
 }
 
+
 void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds accumulator with id identifier and type type_decl as a new stack var
     int offset = ++cur_offset;
 
@@ -1393,6 +1419,11 @@ void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds
     variableTypes.addid(identifier, type_decl);
 
     emit_addiu(SP, SP, -4, s); //make room on the stack for the next variable 
+
+    //Initialize a default value
+
+
+    initialize_default_value(*type_decl, s);
 
     emit_store(ACC, offset, FP, s); // store the local variable on the stack
 }
@@ -1577,11 +1608,9 @@ void no_expr_class::code(ostream &s) {
 }
 
 void object_class::code(ostream &s) {
-    PRINT(name->get_string() );
     if (name == self){
         emit_move(ACC, SELF, s);
     } else { 
-        PRINT("it wasnt self");
         emit_load_variable(name->get_string(), s); 
     } 
 }

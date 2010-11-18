@@ -8,23 +8,25 @@
 class A inherits B{
     x : B <- new B;
 };
+*)
 class B{
      b():Int{5};
 };
-*)
 
 class Main inherits IO{ 
 (*
     b : Bool <- true;
     c : Bool <- true;
     i : Int <- 4;
-    s : String <- "Hello world.";
     *)
+        s : String;
 
-    s(x : Int, y : Int, z : Int) : Int {x + y + z}; 
     main():Object { 
 
-        out_int(s(5, 6, 7))
+        {
+            "derf";
+            out_string(s);
+        }
 
         (* out_int( (new B).b()) *)
 (*
