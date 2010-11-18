@@ -1170,7 +1170,7 @@ void CgenClassTable::code_method(CgenNodeP obj){
                 //MARK: "FIXTHIS"
                 method_class *method = (method_class*) features->nth(i); 
                 //Add all arguments into the scope.
-                for (int j=0;j<method->formals->len();j++){
+                for (int j=method->formals->len()-1; j>=0;j--){ //FIXED
                     formal_class *formal = (formal_class *)method->formals->nth(j);
                     pair<bool, int>* p = new pair<bool, int>(false, 3 + j); //Pretty sure this is right
                     variableOffsets.addid(formal->name->get_string(), p); 
@@ -1365,7 +1365,7 @@ void dispatch_class::code(ostream &s) {
 
     // Loop through the arguments and evaluate them
     // We need to push the value returned by these arguments onto the stack
-    for(int i=actual->len() - 1; i>=0; i--){
+    for(int i=0; i<actual->len(); i++){ //FIXED
        actual->nth(i)->code(s);
        emit_push(ACC, s);
     }
