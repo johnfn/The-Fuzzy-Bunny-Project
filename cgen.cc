@@ -1074,7 +1074,7 @@ void CgenClassTable::code_init(CgenNodeP obj){
     // have inherited attrs
     for (int i=0; i<(int)attrs.size();i++){
         PRINT(i << endl);
-        if (!features->nth(i)->method){
+        if (i < features->len() && !features->nth(i)->method){
             PRINT(features->nth(i)->type_decl);
             variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
         }
@@ -1205,7 +1205,7 @@ void CgenClassTable::code_method(CgenNodeP obj){
             variableOffsets.addid(attrs[i], p); //TODO offset+3?
         }
         for (int i=0; i<(int)attrs.size();i++){
-            if (!features->nth(i)->method)
+            if (i < features->len() && !features->nth(i)->method)
                 variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
         }
         
@@ -1433,9 +1433,6 @@ void dispatch_class::code(ostream &s) {
 
     // Loop through the arguments and evaluate them
     // We need to push the value returned by these arguments onto the stack
-   
-    //TODO: Why the hell are we pushing the arguments before checking if it's void
-    //Not that it matters because if it's void, it will just end the program.
 
     for(int i=0; i<actual->len(); i++){ //FIXED
        actual->nth(i)->code(s);
@@ -1453,8 +1450,6 @@ void dispatch_class::code(ostream &s) {
     if(self){
         offset = lookupMethod(curClass, name);
     }else{
-        PRINT("NOT CUR CLASS");
-        
         offset = lookupMethod(expr->type, name);
     }
 
@@ -1531,6 +1526,16 @@ void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds
     isNoExpr = false;
 }
 
+
+void remove_top_stack_variable(ostream &s){
+    emit_addiu(SP, SP, 4, s); //stack goes back up
+
+    variableOffsets.exitscope();
+    variableTypes.exitscope();
+
+    --cur_offset;
+}
+
 void typcase_class::code(ostream &s) {
     
     vector<int> order; 
@@ -1605,7 +1610,7 @@ void typcase_class::code(ostream &s) {
         
         //Run the expr
         b->expr->code(s);
-         
+        remove_top_stack_variable(s);         
         emit_branch(end_case, s);
     }
     
@@ -1623,15 +1628,6 @@ void block_class::code(ostream &s) {
     for (int i=0;i<body->len();i++){
         body->nth(i)->code(s);
     }
-}
-
-void remove_top_stack_variable(ostream &s){
-    emit_addiu(SP, SP, 4, s); //stack goes back up
-
-    variableOffsets.exitscope();
-    variableTypes.exitscope();
-
-    --cur_offset;
 }
 
 void let_class::code(ostream &s) {

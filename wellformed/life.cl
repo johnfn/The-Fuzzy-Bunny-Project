@@ -389,11 +389,14 @@ class CellularAutomaton inherits Board {
    out_string("Would you like to choose a background pattern? \n");
    out_string("Please use lowercase y or n for your answer [n]: ");
    ans <- in_string();
-   if ans = "y" then 
+   out_string(ans);
+   out_string("what's wrong here?");
+   (* if ans = "y" then 
 	true
    else
 	false
-   fi;
+   fi; *)
+   true;
    }
   )
  };
@@ -413,6 +416,7 @@ class Main inherits CellularAutomaton {
 	   out_string("There are many initial states to choose from. \n");
 	   while prompt2() loop
 	    {
+         out_string("whatever");
 	     continue <- true;
 	     choice <- option();
 	     cells <- (new CellularAutomaton).init(choice);
@@ -429,6 +433,7 @@ class Main inherits CellularAutomaton {
                 pool;
             }
             pool;
+        out_string("asdasda");
 	    self;
       }  ) ); }
     };

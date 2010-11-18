@@ -28,7 +28,7 @@ class Main inherits IO{
             z : B => s <- "boobooB";
             y : String => s <- "String";
             x : Bool => s <- "Bool";
-            -- w : Int => s <- "Int";
+            w : Int => s <- "Int";
         esac;
         self.out_string(s.concat(" | something | \n"));
         5;
