@@ -92,11 +92,13 @@ Class Cons inherits BookList {
     
     print_list() : Object {
         {
+            out_string("wjhat");
             case xcar.print() of
                 dummy : Book => out_string("- dynamic type was Book -\n");
                 dummy : Article => out_string("- dynamic type was Article -\n");
             esac;
-            xcdr.print_list();
+            --xcdr.print_list();
+            5;
         }
     };
 };
