@@ -1737,8 +1737,10 @@ void leq_class::code(ostream &s) {
     comparison_general(e1, e2, s, true); //add 1 and then eval lt
 }
 
-//TODO: we should compare pointers here too (it says so in operational semantics)
+//DONE: we should compare pointers here too (it says so in operational semantics)
 void eq_class::code(ostream &s) {
+    int label_eq = label_count++;
+
     e1->code(s);
     emit_push(ACC, s);
 
@@ -1747,11 +1749,16 @@ void eq_class::code(ostream &s) {
     emit_pop(ACC, s);
     emit_move(T2, ACC, s);
 
+
     emit_load_false(s);
     emit_move(A1, ACC, s);
     emit_load_true(s); //Load t/f in a semi stupid way to keep abstraction (yay)
 
+    emit_beq(T1, T2, label_eq, s);
+
     emit_jal("equality_test", s);
+
+    emit_label_def(label_eq, s);
 }
 
 void comp_class::code(ostream &s) {
