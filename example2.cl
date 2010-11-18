@@ -19,18 +19,18 @@ class Main inherits IO{
     i : Int <- 0;
     d : A;
     s : String <- "empty";
-    main():SELF_TYPE { 
+    main():Int { 
        {
         s <- "Object";
         s <- "B";
-
-        case s of
+        -- case d fails
+        case b of
             x : Bool => s <- "Object";
-            z : B => s <- "B";
-            y : String => s <- "String";
         esac;
-        
-        self.out_string(s);
+        self.out_string("WHAASS");
+        5;
+        -- self.out_string(s);
+        -- self.out_string("WHAT?");
       }
     };
 };

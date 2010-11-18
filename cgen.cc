@@ -1059,18 +1059,30 @@ void CgenClassTable::code_init(CgenNodeP obj){
     
     variableOffsets.enterscope();
     variableTypes.enterscope();
-    
+    PRINT("Creating a class..." << endl); 
     vector<string> attrs = attrLookup[obj->name]; 
     for (int i=0;i<(int)attrs.size();i++){ //Add variable into scope at correct offset
         pair<bool, int>* p = new pair<bool, int>(true, i+3);
+        PRINT(" attr : " << attrs[i] << endl);
         variableOffsets.addid(attrs[i], p); //TODO offset+3?
     }
+    PRINT("Done adding into scope");
+    //THIS IS CRAZY RIGHT? These attrs could be from base classes, 
+    //hence, you can't access features->nth, you'd have to get their types
+    //by storing it in a table
+    //TODO: Below looks positively fishy, why check features->(i) is not a type, could
+    // have inherited attrs
     for (int i=0; i<(int)attrs.size();i++){
-        if (!features->nth(i)->method)
+        PRINT(i << endl);
+        if (!features->nth(i)->method){
+            PRINT(features->nth(i)->type_decl);
             variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
+        }
     }
+    PRINT("Done adding types");
         
     if(obj->parent != No_class){
+        PRINT("SOMETHING MYSTERIOUS");
         stringstream s;
         s << obj->parent << CLASSINIT_SUFFIX;
         emit_jal(s.str().c_str(), str);
@@ -1084,8 +1096,17 @@ void CgenClassTable::code_init(CgenNodeP obj){
             //initialize_default_value(a->type_decl, str); //TODO, hmm.
             a->init->code(str);
             int offset = attrsAbove[obj->name] + i + 3;
-
-            emit_store(ACC, offset, SELF, str);
+            
+            //If there's no init for a non-basic class, emit nothing, 
+            //void is the default value of the object layout? FIXED
+            
+            if(isNoExpr && a->type_decl != Int &&
+                        a->type_decl != Str &&
+                        a->type_decl != Bool){
+            
+            }else{
+                emit_store(ACC, offset, SELF, str);
+            }
         }
     }
 
@@ -1484,6 +1505,7 @@ void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds
     //Initialize a default value
 
     if (isNoExpr) { 
+        //Init default value
         initialize_default_value(*type_decl, s);
     } else { 
         emit_store(ACC, offset, FP, s); // store the local variable on the stack
@@ -1783,6 +1805,7 @@ void isvoid_class::code(ostream &s) {
 
 void no_expr_class::code(ostream &s) {
     isNoExpr = true;
+    PRINT("IS NO EXPR");
     //Should return an empty object with 0's everywhere that we care about
 }
 
