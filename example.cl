@@ -20,6 +20,7 @@ class Main inherits IO{
     d : A;
     s : String <- "empty";
     main():SELF_TYPE { 
+(*
        { 
         case i of
             x : Bool => s <- "Object";
@@ -28,7 +29,7 @@ class Main inherits IO{
         esac;
         
         self.out_string(s);
-      }
+      } *) 
 
        (* 
         (*
@@ -43,14 +44,18 @@ class Main inherits IO{
         if s.substr(3,3) = "lo " then out_string("Something tricky is going on") else out_string("I guess it's just pointers") fi
     i : Int <- 4;
     *)
-        s : String;
+--        s : String;
 
+    --f():Int{5};
+
+
+    i : Int <- 9;
     main():Object { 
 
-        {
-            "derf";
-            out_string(s);
-        }
+        out_int( if i=4 then 4 else if i=5 then 5 else if i=1 then 1 else 0 fi fi fi )
+        (* {
+            out_string( in_string() );
+        } *)
 
         (* out_int( (new B).b()) *)
 (*

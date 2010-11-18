@@ -1749,6 +1749,7 @@ void int_const_class::code(ostream& s)
   // Need to be sure we have an IntEntry *, not an arbitrary Symbol
   //
   emit_load_int(ACC,inttable.lookup_string(token->get_string()),s);
+    emit_jal("Object.copy", s);
 }
 
 void string_const_class::code(ostream& s)
@@ -1759,6 +1760,7 @@ void string_const_class::code(ostream& s)
 void bool_const_class::code(ostream& s)
 {
   emit_load_bool(ACC, BoolConst(val), s);
+    emit_jal("Object.copy", s);
 }
 
 void new__class::code(ostream &s) {
@@ -1788,6 +1790,7 @@ void object_class::code(ostream &s) {
         emit_load_variable(name->get_string(), s); 
     } 
 }
+
 
 
 
