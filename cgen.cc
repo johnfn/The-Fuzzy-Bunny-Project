@@ -1532,7 +1532,6 @@ void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds
 }
 
 void typcase_class::code(ostream &s) {
-    expr->code(s); //Now, the result of the expr is ACC
     
     vector<int> order; //This vector contain the order of branches for the case to eval
 
@@ -1555,20 +1554,11 @@ void typcase_class::code(ostream &s) {
     int this_case = label_count++;
     bool first = true;
     
+    expr->code(s); //Now, the result of the expr is ACC
     emit_bne(ACC, ZERO, this_case, s);
     emit_load_address(ACC, "str_const0", s); //TODO: Don't hardcode this
     emit_load_imm(T1, 18, s); //TODO: Get the real line number
     emit_jal("_case_abort2", s);
-
-    //Check if ACC is void
-    //call _case_abort2
-    //put line number in T1
-    //put filename in A0
-    /*
-    la	$a0 str_const0
-	li	$t1 18
-	jal	_case_abort2
-    */
     
     for(int i=0; i < order.size(); i++){
         
@@ -1595,8 +1585,7 @@ void typcase_class::code(ostream &s) {
     */
         //In the first case branch, we read the class tag of the object in the ACC 
         if(first){
-            emit_load(T2, 0 , ACC, s); //load int value from result
-
+            emit_load(T2, 0 , ACC, s); //load classTag value from result
             first = false;
         }
 
@@ -1631,6 +1620,7 @@ void typcase_class::code(ostream &s) {
     //TODO: We are getting the wrong class name here.
     emit_label_def(this_case, s);
     emit_jal("_case_abort", s);
+    
     //Up it for the next label wherever
     label_count++;
     emit_label_def(end_case, s);
@@ -1754,10 +1744,8 @@ void leq_class::code(ostream &s) {
     comparison_general(e1, e2, s, true); //add 1 and then eval lt
 }
 
-//DONE: we should compare pointers here too (it says so in operational semantics)
+//TODO: we should compare pointers here too (it says so in operational semantics)
 void eq_class::code(ostream &s) {
-    int label_eq = label_count++;
-
     e1->code(s);
     emit_push(ACC, s);
 
@@ -1766,16 +1754,11 @@ void eq_class::code(ostream &s) {
     emit_pop(ACC, s);
     emit_move(T2, ACC, s);
 
-
     emit_load_false(s);
     emit_move(A1, ACC, s);
     emit_load_true(s); //Load t/f in a semi stupid way to keep abstraction (yay)
 
-    emit_beq(T1, T2, label_eq, s);
-
     emit_jal("equality_test", s);
-
-    emit_label_def(label_eq, s);
 }
 
 void comp_class::code(ostream &s) {

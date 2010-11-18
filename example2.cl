@@ -26,6 +26,8 @@ class Main inherits IO{
         -- case d fails
         case b of
             x : Bool => s <- "Object";
+            z : B => s <- "B";
+            y : String => s <- "String";
         esac;
         self.out_string("WHAASS");
         5;
