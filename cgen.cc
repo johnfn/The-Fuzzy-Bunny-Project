@@ -1386,6 +1386,7 @@ void emit_check_acc_null(ostream &s){
  */
 void assign_class::code(ostream &s) {
     expr->code(s); //result stored in ACC
+    emit_jal("Object.copy", s); //copy 
     emit_store_variable(name->get_string(), s);
 }
 
@@ -1412,21 +1413,17 @@ void dispatch_class::code(ostream &s) {
 
     // Loop through the arguments and evaluate them
     // We need to push the value returned by these arguments onto the stack
+    
+    
     for(int i=0; i<actual->len(); i++){ //FIXED
        actual->nth(i)->code(s);
        emit_push(ACC, s);
     }
     
     //Check if it's
-    bool self = false;
-    if(expr->type == SELF_TYPE){
-        emit_move(ACC, SELF, s);   
-        self = true;
-    }else{
- 
-        //Eval this expression
-        expr->code(s);
-    }
+    bool self = expr->type == SELF_TYPE;
+
+    expr->code(s);
     
     //TODO Check if the object is null
 

@@ -1,65 +1,37 @@
-#27
+#1
 _program
-  #27
+  #1
   _class
     Main
     IO
-    "wellformed/primes.cl"
+    "test.cl"
     (
-    #29
+    #3
     _method
       main
-      Int
-      #30
-      _int
-        0
-      : Int
-    #33
-    _attr
-      out
-      Int
-      #34
-      _block
-        #35
+      SELF_TYPE
+      #4
+      _dispatch
+        #4
         _dispatch
-          #35
+          #4
           _object
             self
           : SELF_TYPE
           out_string
           (
-          #35
+          #4
           _string
-            "2 is trivially prime.\n"
+            "1"
           : String
           )
         : SELF_TYPE
-        #36
-        _int
-          2
-        : Int
-      : Int
-    #39
-    _attr
-      testee
-      Int
-      #39
-      _int
-        5
-      : Int
-    #41
-    _attr
-      divisor
-      Int
-      #0
-      _no_expr
-      : _no_type
-    #43
-    _attr
-      stop
-      Int
-      #43
-      _int
-        500
-      : Int
+        out_string
+        (
+        #4
+        _string
+          "2"
+        : String
+        )
+      : SELF_TYPE
     )

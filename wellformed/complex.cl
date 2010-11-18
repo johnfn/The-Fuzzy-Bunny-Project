@@ -1,6 +1,7 @@
 class Main inherits IO {
     main() : SELF_TYPE {
 	(let c : Complex <- (new Complex).init(1, 1) in
+
 	    if c.reflect_X().reflect_Y() = c.reflect_0()
 	    then out_string("=)\n")
 	    else out_string("=(\n")
@@ -32,6 +33,7 @@ class Complex inherits IO {
 	{
 	    x = ~x;
 	    y = ~y;
+print();
 	    self;
 	}
     };
@@ -39,6 +41,7 @@ class Complex inherits IO {
     reflect_X() : Complex {
 	{
 	    y = ~y;
+print();
 	    self;
 	}
     };
@@ -46,6 +49,7 @@ class Complex inherits IO {
     reflect_Y() : Complex {
 	{
 	    x = ~x;
+print();
 	    self;
 	}
     };

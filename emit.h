@@ -80,6 +80,7 @@
 #define RA   "$ra"		// Return address 
 
 #define S1   "$s1"      //This disturbs me greatly.
+#define S2   "$s2"      //This disturbs me greatly.
 
 //
 // Opcodes

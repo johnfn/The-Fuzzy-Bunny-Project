@@ -21,7 +21,10 @@ class Cons inherits List {
 
 class Main inherits IO{
     main() : Int {
-        6
+        {
+        (new List).cons(3).cons(4);
+        6;
+        }
     };
 };
 

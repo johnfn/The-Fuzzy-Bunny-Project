@@ -57,7 +57,7 @@ class CellularAutomaton inherits IO {
         else
             "."
         fi;
-         out_string("done evol");
+         --out_string("done evol");
         }
     };
    

@@ -1,5 +1,5 @@
 shell rm stuff
-shell ./lexer wellformed/primes.cl | ./parser | ./semant > stuff
+shell ./lexer test.cl | ./parser | ./semant > stuff
 file cgen 
 #break cgen.cc:1572
 r < stuff
