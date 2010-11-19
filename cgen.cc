@@ -1391,18 +1391,15 @@ void emit_store_variable(char *id, ostream &s){
     emit_loadstore_var(id, s, STORETYPE);
 }
 
-void emit_check_acc_null(ostream &s){
+void emit_check_acc_null(int i, ostream &s){
     int jump_label = label_count++;
 	emit_bne(ACC, ZERO, jump_label, s);
     emit_load_address(ACC, "str_const0", s); //TODO: This is wrong. (Should be the str that contains the current file name.)
-    emit_load_imm(T1, 21, s);
+    emit_load_imm(T1, i, s);
     emit_jal("_dispatch_abort", s);
     emit_label_def(jump_label, s);
 }
 
-/*
- * Horribly inefficient, but no one is going to stop us. Probably.
- */
 void assign_class::code(ostream &s) {
     expr->code(s); //result stored in ACC
     emit_jal("Object.copy", s); //copy 
@@ -1431,7 +1428,7 @@ void static_dispatch_class::code(ostream &s) {
 
     expr->code(s);
     
-    emit_check_acc_null(s);
+    emit_check_acc_null(this->get_line_number(), s);
     
     stringstream ss;
     ss << type_name << "_dispTab";
@@ -1464,7 +1461,7 @@ void dispatch_class::code(ostream &s) {
 
     expr->code(s);
     
-    emit_check_acc_null(s);
+    emit_check_acc_null(this->get_line_number(), s);
 
     emit_load(T1, 2, ACC, s);
     int offset;
