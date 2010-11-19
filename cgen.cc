@@ -1781,11 +1781,11 @@ void comp_class::code(ostream &s) {
 
     e1->code(s);
     emit_bool_get_val(s);
-    emit_beq(ACC, ZERO, label_false, s);
-    emit_load_true(s);
+    emit_beqz(ACC, label_false, s);
+    emit_load_false(s);
     emit_branch(label_done, s);
     emit_label_def(label_false, s);
-    emit_load_false(s);
+    emit_load_true(s);
     emit_label_def(label_done, s);
 
 }
