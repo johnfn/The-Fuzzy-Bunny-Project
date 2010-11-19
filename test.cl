@@ -265,10 +265,10 @@ class CaseTest inherits Problem {
     out_int(a);
     out_string("\n");
     c <- new D;
-    a <- 10 * case c of x : Object => 9;
+    a <- case c of x : Object => 9;
                             x : C => x.method();
                             x : D => x.method();
-                  esac;
+                  esac * 10;
     out_int(a);
     out_string("\n");
 
