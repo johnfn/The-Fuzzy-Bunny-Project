@@ -1518,7 +1518,7 @@ bool compRange(int i, int j){
 
 
 void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds accumulator with id identifier and type type_decl as a new stack var
-    int offset = ++cur_offset;
+    int offset = --cur_offset;
 
     variableOffsets.enterscope();
     variableTypes.enterscope();
@@ -1546,7 +1546,7 @@ void remove_top_stack_variable(ostream &s){
     variableOffsets.exitscope();
     variableTypes.exitscope();
 
-    --cur_offset;
+    ++cur_offset;
 }
 
 
