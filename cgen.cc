@@ -1816,11 +1816,11 @@ void new__class::code(ostream &s) {
     string classtyp; 
 
     if (type_name == SELF_TYPE) { 
-        prototyp = curObj->get_string();
+        prototyp = curClass->get_string();
         prototyp += PROTOBJ_SUFFIX;
 
 
-        classtyp = curObj->get_string();
+        classtyp = curClass->get_string();
         classtyp += CLASSINIT_SUFFIX;
     } else { 
         prototyp = type_name->get_string(); 
