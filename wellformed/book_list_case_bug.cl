@@ -23,8 +23,8 @@ Class Cons inherits BookList {
     print_list() : Object {
         {
             out_string("wjhat");
-            a <- new Book;
-            case xcar of
+            -- a <- new Book;
+            case a of
                 dummy : Article => out_string("- dynamic type was Article -\n");
             esac;
         }

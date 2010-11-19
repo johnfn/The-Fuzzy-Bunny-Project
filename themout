@@ -3,16 +3,34 @@ Copyright 1990-2003 by James R. Larus (larus@cs.wisc.edu).
 All Rights Reserved.
 See the file README for a full copyright notice.
 Loaded: /usr/class/cs143/lib/trap.handler
-<<<<<<< HEAD:themout
-17141611714163171416511714161171416317141653117141611714163171416511714161171416317141653171416117141631714165171416COOL program successfully executed
-Stats -- #instructions : 31321
-         #reads : 7361  #writes 5027  #branches 6612  #other 12321
-=======
-<<<<<<< HEAD:themout
-GenGC initialized.
-17141611714163171416511714161171416317141653117141611714163171416511714161171416317141653171416117141631714165171416COOL program successfully executed
-Stats -- #instructions : 33903
-         #reads : 7362  #writes 5403  #branches 7709  #other 13429
-=======
->>>>>>> 9981273dd9f17ec6e1cd933a8a4fd100eca40b28:themout
->>>>>>> 3a010b0a57bef5c89f30e45269d6e404afd3980d:themout
+
+---Code Generation Correctness Test---
+
+ArithTest1:
+	correct
+ArithTest2:
+	correct
+ComparisonTest:
+	correct
+LoopTest:
+	correct
+ConditionTest:
+	correct
+StringTest:
+	correct
+SideEffectTest:
+	correct
+LetTest:
+	correct
+CaseTest:
+	correct
+IsVoidTest:
+	correct
+SelfTypeTest:
+	correct
+
+Perfect! Nice job.
+
+COOL program successfully executed
+Stats -- #instructions : 22317
+         #reads : 4994  #writes 3221  #branches 4682  #other 9420

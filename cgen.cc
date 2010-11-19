@@ -1579,11 +1579,11 @@ void typcase_class::code(ostream &s) {
     bool first = true;
     
     expr->code(s); //Now, the result of the expr is ACC
-    
+
     //Case on void run-time error
     emit_bne(ACC, ZERO, this_case, s);
     emit_load_address(ACC, "str_const0", s); //TODO: Don't hardcode this
-    emit_load_imm(T1, 18, s); //TODO: Get the real line number
+    emit_load_imm(T1, this->get_line_number() , s); //TODO: Get the real line number
     emit_jal("_case_abort2", s);
     
     for(int i=0; i < order.size(); i++){
@@ -1628,7 +1628,7 @@ void typcase_class::code(ostream &s) {
         
         //Run the expr
         b->expr->code(s);
-        remove_top_stack_variable(s);         
+        remove_top_stack_variable(s);
         emit_branch(end_case, s);
     }
     
@@ -1865,6 +1865,7 @@ void object_class::code(ostream &s) {
         emit_load_variable(name->get_string(), s); 
     } 
 }
+
 
 
 
