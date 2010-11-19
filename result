@@ -1,0 +1,12 @@
+5a6,10
+> 5 4 3 2 1 
+> 4 3 2 1 
+> 3 2 1 
+> 2 1 
+> 1 
+7,8c12,13
+< Stats -- #instructions : 1319
+<          #reads : 272  #writes 230  #branches 267  #other 550
+---
+> Stats -- #instructions : 3066
+>          #reads : 897  #writes 512  #branches 568  #other 1089

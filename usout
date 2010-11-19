@@ -3,21 +3,6 @@ Copyright 1990-2003 by James R. Larus (larus@cs.wisc.edu).
 All Rights Reserved.
 See the file README for a full copyright notice.
 Loaded: /usr/class/cs143/lib/trap.handler
-The following symbols are undefined:
-heap_start
-_bool_tag
-Int_protObj
-_int_tag
-_string_tag
-Main.main
-String_protObj
-_MemMgr_TEST
-_MemMgr_COLLECTOR
-class_nameTab
-Int_init
-String_init
-Main_protObj
-_MemMgr_INITIALIZER
-Main_init
-
-[0x00400740]	0x3c010000  lui $1, 0 [_MemMgr_INITIALIZER] ; 1139: la	$t0 _MemMgr_INITIALIZER		# pointer to initialization
+COOL program successfully executed
+Stats -- #instructions : 1319
+         #reads : 272  #writes 230  #branches 267  #other 550

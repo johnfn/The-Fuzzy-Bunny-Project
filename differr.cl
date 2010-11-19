@@ -1,6 +1,6 @@
-class List inherits IO{
+class List {
 
-   isNil() : Bool { { out_string("deadyet?"); true; } };
+   isNil() : Bool { true };
    tail()  : List { {  self; } };
 
    cons(i : Int) : List {
@@ -13,6 +13,7 @@ class List inherits IO{
 
 class Cons inherits List {
 
+   car : Int;	-- The element in this list cell
    cdr : List;	-- The rest of the list
    isNil() : Bool { false };
    tail()  : List { cdr };
@@ -28,7 +29,6 @@ class Cons inherits List {
 class Main inherits IO {
 
    mylist : List;
-    x : Bool <- false;
 
    print_list(l : List) : Object {
        if l.isNil() then self else print_list(l.tail()) fi
@@ -39,6 +39,7 @@ class Main inherits IO {
 	 mylist <- (new List).cons(1);
 
        print_list(mylist);
+        out_string("howboutnow");
       }
    };
 
