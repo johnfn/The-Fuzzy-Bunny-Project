@@ -1,6 +1,6 @@
-7,8c7,8
-< Stats -- #instructions : 47577
-<          #reads : 10264  #writes 7119  #branches 10516  #other 19678
+8,9c8,9
+< Stats -- #instructions : 47604
+<          #reads : 10265  #writes 7130  #branches 10518  #other 19691
 ---
-> Stats -- #instructions : 31321
->          #reads : 7361  #writes 5027  #branches 6612  #other 12321
+> Stats -- #instructions : 33903
+>          #reads : 7362  #writes 5403  #branches 7709  #other 13429

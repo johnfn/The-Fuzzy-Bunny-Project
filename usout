@@ -3,6 +3,7 @@ Copyright 1990-2003 by James R. Larus (larus@cs.wisc.edu).
 All Rights Reserved.
 See the file README for a full copyright notice.
 Loaded: /usr/class/cs143/lib/trap.handler
+GenGC initialized.
 17141611714163171416511714161171416317141653117141611714163171416511714161171416317141653171416117141631714165171416COOL program successfully executed
-Stats -- #instructions : 47577
-         #reads : 10264  #writes 7119  #branches 10516  #other 19678
+Stats -- #instructions : 47604
+         #reads : 10265  #writes 7130  #branches 10518  #other 19691
