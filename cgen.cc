@@ -1841,6 +1841,9 @@ void isvoid_class::code(ostream &s) {
     int truelabel = label_count++;
     int donelabel = label_count++;
 
+    e1->code(s);
+
+
     emit_beqz(ACC, truelabel, s); //branch if false
     //load false into acc
     emit_load_false(s);

@@ -5,9 +5,10 @@ z : Main;
 
    main() : Object {
 {
-        (if isvoid x then out_string("yes") else out_string("no") fi).out_string("\n");
-        (if isvoid y then out_string("yes") else out_string("no") fi).out_string("\n");
-        (if isvoid z then out_string("yes") else out_string("no") fi).out_string("\n");
+        isvoid z;
+        --(if isvoid x then out_string("yes") else out_string("no") fi).out_string("\n");
+        --(if isvoid y then out_string("yes") else out_string("no") fi).out_string("\n");
+        --(if isvoid z then out_string("yes") else out_string("no") fi).out_string("\n");
 }
     };
 };
