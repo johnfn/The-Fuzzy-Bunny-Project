@@ -3,32 +3,9 @@ Copyright 1990-2003 by James R. Larus (larus@cs.wisc.edu).
 All Rights Reserved.
 See the file README for a full copyright notice.
 Loaded: /usr/class/cs143/lib/trap.handler
-The following symbols are undefined:
-SELF_TYPE_init
-SELF_TYPE_protObj
+Welcome to the Game of Life.
+There are many initial states to choose from. 
 
 
----Code Generation Correctness Test---
-
-ArithTest1:
-	correct
-ArithTest2:
-	incorrect
-ComparisonTest:
-	correct
-LoopTest:
-	correct
-ConditionTest:
-	correct
-StringTest:
-	correct
-SideEffectTest:
-	correct
-LetTest:
-	correct
-CaseTest:
-	incorrect
-IsVoidTest:
-	incorrect
-SelfTypeTest:
-	[0x00401de0]	0x3c010000  lui $1, 0 [SELF_TYPE_protObj]   ; 1922: la	$a0 SELF_TYPE_protObj
+Would you like to choose a background pattern? 
+Please use lowercase y or n for your answer [n]: 
