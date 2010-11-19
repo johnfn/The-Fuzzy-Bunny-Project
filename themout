@@ -3,7 +3,8 @@ Copyright 1990-2003 by James R. Larus (larus@cs.wisc.edu).
 All Rights Reserved.
 See the file README for a full copyright notice.
 Loaded: /usr/class/cs143/lib/trap.handler
-INITINITwjhatArticle- dynamic type was Article -
-COOL program successfully executed
-Stats -- #instructions : 1101
-         #reads : 240  #writes 196  #branches 205  #other 460
+INIT :   BookNil
+INIT :   ArticleCons
+ArticleCOOL program successfully executed
+Stats -- #instructions : 1366
+         #reads : 312  #writes 224  #branches 255  #other 575

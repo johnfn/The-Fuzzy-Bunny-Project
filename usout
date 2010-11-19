@@ -3,6 +3,8 @@ Copyright 1990-2003 by James R. Larus (larus@cs.wisc.edu).
 All Rights Reserved.
 See the file README for a full copyright notice.
 Loaded: /usr/class/cs143/lib/trap.handler
-INITINITwjhatArticleNo match in case statement for Class Article
-Stats -- #instructions : 1885
-         #reads : 376  #writes 319  #branches 389  #other 801
+INIT :   NilBook
+INIT :   ConsArticle
+ConsCOOL program successfully executed
+Stats -- #instructions : 2166
+         #reads : 457  #writes 348  #branches 444  #other 917

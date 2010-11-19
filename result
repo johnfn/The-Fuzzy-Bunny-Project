@@ -1,9 +1,12 @@
-6,8c6,9
-< INITINITwjhatArticleNo match in case statement for Class Article
-< Stats -- #instructions : 1885
-<          #reads : 376  #writes 319  #branches 389  #other 801
+6,10c6,10
+< INIT :   NilBook
+< INIT :   ConsArticle
+< ConsCOOL program successfully executed
+< Stats -- #instructions : 2166
+<          #reads : 457  #writes 348  #branches 444  #other 917
 ---
-> INITINITwjhatArticle- dynamic type was Article -
-> COOL program successfully executed
-> Stats -- #instructions : 1101
->          #reads : 240  #writes 196  #branches 205  #other 460
+> INIT :   BookNil
+> INIT :   ArticleCons
+> ArticleCOOL program successfully executed
+> Stats -- #instructions : 1366
+>          #reads : 312  #writes 224  #branches 255  #other 575

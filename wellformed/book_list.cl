@@ -81,9 +81,11 @@ Class Cons inherits BookList {
     
     init(hd : Book, tl : BookList) : Cons {
         {
-            out_string("INIT");
+            out_string("INIT :   ");
             xcar <- hd;
             xcdr <- tl;
+            out_string(xcar.type_name());
+            out_string(xcdr.type_name().concat("\n"));
             self;
         }
     };
@@ -91,19 +93,21 @@ Class Cons inherits BookList {
     car() : Book { xcar };
 
     cdr() : BookList { xcdr };
-    
+    a : Book; 
     print_list() : Object {
         {
-            out_string("wjhat");
+            -- out_string("wjhat");
             -- xcar alone doesn't work, Article
             -- out_string(xcar);
             -- xcar.print();
             
-            a <- new Book;
-            out_string(xcar.type_name());
-            case xcar of
+            --a <- new Article;
+            
+           out_string(xcar.type_name());
+            
+            (*case a of
                 dummy : Article => out_string("- dynamic type was Article -\n");
-            esac;
+            esac;*)
             5;
         }
     };
