@@ -1073,24 +1073,13 @@ void CgenClassTable::code_init(CgenNodeP obj){
     //by storing it in a table
     //TODO: Below looks positively fishy, why check features->(i) is not a type, could
     // have inherited attrs
-    /* 
     for (int i=0; i<(int)attrs.size();i++){
         PRINT(i << endl);
-        if (!features->nth(i)->method){
+        if (i < features->len() && !features->nth(i)->method){
             PRINT(features->nth(i)->type_decl);
             variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
         }
     }
-    */ 
-
-    for (int i=0; i<(int)features->len();i++){
-        PRINT(i << endl);
-        if (!features->nth(i)->method){
-            PRINT(features->nth(i)->type_decl);
-            variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
-        }
-    }
-
     PRINT("Done adding types");
         
     if(obj->parent != No_class){
@@ -1216,8 +1205,8 @@ void CgenClassTable::code_method(CgenNodeP obj){
             pair<bool, int>* p = new pair<bool, int>(true, i+3);
             variableOffsets.addid(attrs[i], p); //TODO offset+3?
         }
-        for (int i=0; i<(int)features->len();i++){
-            if (!features->nth(i)->method)
+        for (int i=0; i<(int)attrs.size();i++){
+            if (i < features->len() && !features->nth(i)->method)
                 variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
         }
         
@@ -1445,7 +1434,7 @@ void dispatch_class::code(ostream &s) {
 
     // Loop through the arguments and evaluate them
     // We need to push the value returned by these arguments onto the stack
-   
+
     for(int i=0; i<actual->len(); i++){ //FIXED
        actual->nth(i)->code(s);
        emit_push(ACC, s);
@@ -1462,8 +1451,6 @@ void dispatch_class::code(ostream &s) {
     if(self){
         offset = lookupMethod(curClass, name);
     }else{
-        PRINT("NOT CUR CLASS");
-        
         offset = lookupMethod(expr->type, name);
     }
 
@@ -1540,6 +1527,7 @@ void new_stack_variable(char *identifier, Symbol *type_decl, ostream &s){ //Adds
     isNoExpr = false;
 }
 
+
 void remove_top_stack_variable(ostream &s){
     emit_addiu(SP, SP, 4, s); //stack goes back up
 
@@ -1549,21 +1537,20 @@ void remove_top_stack_variable(ostream &s){
     ++cur_offset;
 }
 
-
 void typcase_class::code(ostream &s) {
-    expr->code(s); //Now, the result of the expr is ACC
     
-    vector<int> order; //This vector contain the order of branches for the case to eval
+    vector<int> order; 
+    //This vector contain the order of branches for the case to eval
 
     for(int i=0; i< cases->len(); i++){
         branch_class *b = (branch_class*) cases->nth(i);
-        PRINT("type of this branch is : " << b->type_decl << endl);
         order.push_back(classTagLookup[b->type_decl]);
     }
     
-    //Sort the cases based on subClassRange
-    
+    //Sort the cases based on subClassRange 
     sort(order.begin(), order.end(), compRange);
+
+    //DEBUG
 
     for(vector<int>::iterator it = order.begin(); it != order.end(); ++it)
         PRINT(*it << endl);
@@ -1574,20 +1561,13 @@ void typcase_class::code(ostream &s) {
     int this_case = label_count++;
     bool first = true;
     
+    expr->code(s); //Now, the result of the expr is ACC
+    
+    //Case on void run-time error
     emit_bne(ACC, ZERO, this_case, s);
     emit_load_address(ACC, "str_const0", s); //TODO: Don't hardcode this
     emit_load_imm(T1, 18, s); //TODO: Get the real line number
     emit_jal("_case_abort2", s);
-
-    //Check if ACC is void
-    //call _case_abort2
-    //put line number in T1
-    //put filename in A0
-    /*
-    la	$a0 str_const0
-	li	$t1 18
-	jal	_case_abort2
-    */
     
     for(int i=0; i < order.size(); i++){
         
@@ -1596,26 +1576,17 @@ void typcase_class::code(ostream &s) {
 
         //Lame way to find the right branch
         for(int j=0; j<cases->len(); j++){
-            if(classTagLookup[((branch_class*)cases->nth(j))->name] == i){
+            PRINT(((branch_class*)(cases->nth(j)))->type_decl);
+            if(classTagLookup[((branch_class*)(cases->nth(j)))->type_decl] == classTag){
                 b = (branch_class*) cases->nth(j);
             }
         }
         
         emit_label_def(this_case, s);
-          
-/*label1:
-	lw	$t2 0($a0)
-	blt	$t2 2 label2
-	bgt	$t2 3 label2
-	move	$s1 $a0
-	la	$a0 str_const3
-	sw	$a0 28($s0)
-	b	label0
-    */
+        
         //In the first case branch, we read the class tag of the object in the ACC 
         if(first){
-            emit_load(T2, 0 , ACC, s); //load int value from result
-
+            emit_load(T2, 0 , ACC, s); //load classTag value from result
             first = false;
         }
 
@@ -1623,28 +1594,24 @@ void typcase_class::code(ostream &s) {
         
         string temp = "";
 
+        //Check if it's within the class tag range
+
         stringstream ss;
         ss << subClassRange[classTag];
         temp = ss.str();
-        emit_blt(T2, temp.c_str(), this_case, s); //branch if e1 < e2
+        emit_blt(T2, temp.c_str(), this_case, s);
         
         stringstream si;
         si << classTag;
         temp = si.str();
-        emit_bgt(T2, temp.c_str(), this_case, s); //branch if e1 < e2
-        
-        stringstream sv;
-        sv << b->name;
-        temp = sv.str();
+        emit_bgt(T2, temp.c_str(), this_case, s);
 
         new_stack_variable(b->name->get_string(), &b->type_decl, s); 
         //Adds accumulator with id identifier and type type_decl as a new stack var
         
         //Run the expr
         b->expr->code(s);
-        
-        remove_top_stack_variable(s);
-
+        remove_top_stack_variable(s);         
         emit_branch(end_case, s);
     }
     
@@ -1652,6 +1619,7 @@ void typcase_class::code(ostream &s) {
     //TODO: We are getting the wrong class name here.
     emit_label_def(this_case, s);
     emit_jal("_case_abort", s);
+    
     //Up it for the next label wherever
     label_count++;
     emit_label_def(end_case, s);
@@ -1662,17 +1630,12 @@ void block_class::code(ostream &s) {
         body->nth(i)->code(s);
     }
 }
+
 void let_class::code(ostream &s) {
-
     isNoExpr = false;
-    PRINT("let init");
     init->code(s);
-    PRINT("let var");
     new_stack_variable(identifier->get_string(), &type_decl, s);
-
-    PRINT("let body");
     body->code(s);
-    PRINT("let end");
     remove_top_stack_variable(s);
 }
 
@@ -1769,10 +1732,8 @@ void leq_class::code(ostream &s) {
     comparison_general(e1, e2, s, true); //add 1 and then eval lt
 }
 
-//DONE: we should compare pointers here too (it says so in operational semantics)
+//TODO: we should compare pointers here too (it says so in operational semantics)
 void eq_class::code(ostream &s) {
-    int label_eq = label_count++;
-
     e1->code(s);
     emit_push(ACC, s);
 
@@ -1781,16 +1742,11 @@ void eq_class::code(ostream &s) {
     emit_pop(ACC, s);
     emit_move(T2, ACC, s);
 
-
     emit_load_false(s);
     emit_move(A1, ACC, s);
     emit_load_true(s); //Load t/f in a semi stupid way to keep abstraction (yay)
 
-    emit_beq(T1, T2, label_eq, s);
-
     emit_jal("equality_test", s);
-
-    emit_label_def(label_eq, s);
 }
 
 void comp_class::code(ostream &s) {
@@ -1819,6 +1775,7 @@ void int_const_class::code(ostream& s)
 
 void string_const_class::code(ostream& s)
 {
+  PRINT(token);
   emit_load_string(ACC,stringtable.lookup_string(token->get_string()),s);
 }
 
@@ -1856,7 +1813,6 @@ void object_class::code(ostream &s) {
         emit_load_variable(name->get_string(), s); 
     } 
 }
-
 
 
 
