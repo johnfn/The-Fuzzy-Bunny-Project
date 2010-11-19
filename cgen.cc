@@ -702,7 +702,7 @@ int CgenClassTable::generate_class_tags(CgenNodeP obj, int curTag){
     
     children = obj->get_children();
     if(children){
-        subClassRange[curTag] = classTagLookup[children->hd()->name];
+        subClassRange[curTag] = subClassRange[classTagLookup[children->hd()->name]];
     }else{
         subClassRange[curTag] = curTag;
     }
@@ -1093,12 +1093,7 @@ void CgenClassTable::code_init(CgenNodeP obj){
         PRINT(" attr : " << attrs[i] << endl);
         variableOffsets.addid(attrs[i], p); //TODO offset+3?
     }
-    PRINT("Done adding into scope");
-    //THIS IS CRAZY RIGHT? These attrs could be from base classes, 
-    //hence, you can't access features->nth, you'd have to get their types
-    //by storing it in a table
-    //TODO: Below looks positively fishy, why check features->(i) is not a type, could
-    // have inherited attrs
+    
     for (int i=0; i<(int)attrs.size();i++){
         PRINT(i << endl);
         if (i < features->len() && !features->nth(i)->method){
@@ -1106,6 +1101,7 @@ void CgenClassTable::code_init(CgenNodeP obj){
             variableTypes.addid(features->nth(i)->name->get_string(), &features->nth(i)->type_decl);
         }
     }
+    
     PRINT("Done adding types");
         
     if(obj->parent != No_class){
@@ -1128,16 +1124,7 @@ void CgenClassTable::code_init(CgenNodeP obj){
             int offset = attrsAbove[obj->name] + featuresSeen + 3;
             ++featuresSeen;
             
-            //If there's no init for a non-basic class, emit nothing, 
-            //void is the default value of the object layout? FIXED
-            
-               /*   if(isNoExpr && a->type_decl != Int &&
-                        a->type_decl != Str &&
-                        a->type_decl != Bool){
-                 
-            }else{ */ 
-                emit_store(ACC, offset, SELF, str);
-            //}
+            emit_store(ACC, offset, SELF, str);
         }
     }
 
@@ -1421,6 +1408,7 @@ void assign_class::code(ostream &s) {
 int lookupMethod(Symbol classname, Symbol name){
     vector<pair<string, string> > vect = *symToNode[classname];
     for (int i=0;i< (int)vect.size(); i++){
+        PRINT(vect[i].second);
         if (vect[i].second == name->get_string()){
             return i;
         }
@@ -1435,24 +1423,25 @@ void static_dispatch_class::code(ostream &s) {
        actual->nth(i)->code(s);
        emit_push(ACC, s);
     }
-    
-    bool self = expr->type == SELF_TYPE;
 
     expr->code(s);
     
     emit_check_acc_null(s);
+    
+    stringstream ss;
+    ss << type_name << "_dispTab";
 
-    emit_load(T1, 2, ACC, s);
-    int offset;
-    if(self){
-        offset = lookupMethod(curClass, name);
-    }else{
-        offset = lookupMethod(expr->type, name);
-    }
+    emit_load_address(T1, ss.str().c_str(), s);
+    
+    PRINT("STATIC");
+
+    PRINT(type_name);
+    int offset = lookupMethod(type_name, name);
 
     emit_load(T1, offset, T1, s);
     emit_jalr(T1, s);
 }
+
 void dispatch_class::code(ostream &s) {
     
     //TODO Aiken said that this was tricky because I think you evaluate the object last.
@@ -1801,7 +1790,6 @@ void int_const_class::code(ostream& s)
 
 void string_const_class::code(ostream& s)
 {
-  PRINT(token);
   emit_load_string(ACC,stringtable.lookup_string(token->get_string()),s);
 }
 

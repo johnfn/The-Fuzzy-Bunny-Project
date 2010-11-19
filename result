@@ -1,6 +1,0 @@
-7,8c7,8
-< Stats -- #instructions : 217
-<          #reads : 39  #writes 29  #branches 45  #other 104
----
-> Stats -- #instructions : 163
->          #reads : 29  #writes 22  #branches 31  #other 81
