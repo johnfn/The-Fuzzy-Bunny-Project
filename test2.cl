@@ -1,15 +1,13 @@
 class Main inherits IO {
-    f(x : Int, y : Int, z : Int) : SELF_TYPE { 
-{
-        out_int(x);
-        out_int(y);
-        out_int(z);
-}
-    };
-   main() : Object {
-        {
-            f(1,2,3);
+x : Int;
+y : Bool;
+z : Main;
 
-        }
+   main() : Object {
+{
+        (if isvoid x then out_string("yes") else out_string("no") fi).out_string("\n");
+        (if isvoid y then out_string("yes") else out_string("no") fi).out_string("\n");
+        (if isvoid z then out_string("yes") else out_string("no") fi).out_string("\n");
+}
     };
 };

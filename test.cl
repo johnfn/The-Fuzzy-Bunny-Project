@@ -83,6 +83,8 @@ class ArithTest2 inherits Problem {
     a <- a * 2;     -- 4
     b <- a * a * b; -- 80
 
+
+
     let x : Int <- 2 in {
       b <- b / x / x; -- 20
       a <- ~b;        -- -20
@@ -90,6 +92,7 @@ class ArithTest2 inherits Problem {
       let a : Int <- 5 in {
         b <- b + a;   -- 25
       };
+
 
       a <- a + b;
     };
@@ -300,18 +303,21 @@ class IsVoidTest inherits Problem {
   n : Int;
 
   solve() : Object {{
-    n <- n + if isvoid a then 1 else 2 fi; 
-    n <- n + if isvoid b then 4 else 8 fi;
+    n <- n + if isvoid a then 1 else 0 fi; 
+    n <- n + if isvoid b then 10 else 0 fi;
     
     a <- new B1;
-    n <- n + if isvoid a then 16 else 32 fi;
+    n <- n + if isvoid a then 100 else 0 fi;
 
     let b : A in {
-      n <- n + if isvoid b then 64 else 128 fi;
+      n <- n + if isvoid b then 1000 else 0 fi;
     };
 
-    n <- n + if isvoid self then 256 else 512 fi;
-    n <- n + if Isvoid while false loop 0 pool then 1024 else 2048 fi;
+    n <- n + if isvoid self then 10000 else 0 fi;
+    n <- n + if Isvoid while false loop 0 pool then 100000 else 0 fi;
+
+    out_int(n);
+n;
   }};
 
   answer() : Object { 1641 };
@@ -343,7 +349,7 @@ class SelfTypeTest inherits Problem {
     a <- 10 * a + x2.get_new_self().get_self().inc(); 
     a <- 10 * a + x2.getn();
     a <- 10 * a + x3.get_self().method();
-    a <- 10 * a + x3.get_new_self().method();
+    a <- 10 * a + x3.get_new_self().method();  --Gives 1, should give 3.
   }};
 
   answer() : Object { 51133 };
