@@ -1,27 +1,6 @@
-6,9d5
-< The following symbols are undefined:
-< SELF_TYPE_init
-< SELF_TYPE_protObj
-< 
-16c12
-< 	incorrect
+7,8c7,8
+< Stats -- #instructions : 628
+<          #reads : 112  #writes 104  #branches 126  #other 286
 ---
-> 	correct
-30c26
-< 	incorrect
----
-> 	correct
-32c28
-< 	incorrect
----
-> 	correct
-34c30,36
-< 	[0x00401de0]	0x3c010000  lui $1, 0 [SELF_TYPE_protObj]   ; 1922: la	$a0 SELF_TYPE_protObj
----
-> 	correct
-> 
-> Perfect! Nice job.
-> 
-> COOL program successfully executed
-> Stats -- #instructions : 22317
->          #reads : 4994  #writes 3221  #branches 4682  #other 9420
+> Stats -- #instructions : 441
+>          #reads : 80  #writes 78  #branches 82  #other 201

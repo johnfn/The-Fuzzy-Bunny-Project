@@ -3,34 +3,6 @@ Copyright 1990-2003 by James R. Larus (larus@cs.wisc.edu).
 All Rights Reserved.
 See the file README for a full copyright notice.
 Loaded: /usr/class/cs143/lib/trap.handler
-
----Code Generation Correctness Test---
-
-ArithTest1:
-	correct
-ArithTest2:
-	correct
-ComparisonTest:
-	correct
-LoopTest:
-	correct
-ConditionTest:
-	correct
-StringTest:
-	correct
-SideEffectTest:
-	correct
-LetTest:
-	correct
-CaseTest:
-	correct
-IsVoidTest:
-	correct
-SelfTypeTest:
-	correct
-
-Perfect! Nice job.
-
-COOL program successfully executed
-Stats -- #instructions : 22317
-         #reads : 4994  #writes 3221  #branches 4682  #other 9420
+wjhattest.cl:31Match on void in case statement.
+Stats -- #instructions : 441
+         #reads : 80  #writes 78  #branches 82  #other 201
