@@ -5,17 +5,14 @@ import re
 def getObjectTable(filename):
     newFile = []
     lines = [l for l in file(filename)] 
-    foundDispatch = False
+    found = True
     for line in lines:
-        pattern = re.compile("._dispTab:")
-        word_pattern = re.compile("\.word")
-        if not word_pattern.search(line):
-            foundDispatch = False
+        pattern = re.compile("heap_start:")
 
         if pattern.search(line):
-            foundDispatch = True
+            found = False
         
-        if foundDispatch:
+        if found:
             newFile.append(line)
     return newFile
 
