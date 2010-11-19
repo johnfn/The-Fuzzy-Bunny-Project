@@ -1,9 +1,7 @@
 class Main inherits IO {
 
-    x : Main;
+    x : Int;
    main() : Object {
-        {
-            x.main();
-        }
+        while true loop x <- 5 pool
     };
 };
