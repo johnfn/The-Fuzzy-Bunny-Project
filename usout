@@ -3,6 +3,19 @@ Copyright 1990-2003 by James R. Larus (larus@cs.wisc.edu).
 All Rights Reserved.
 See the file README for a full copyright notice.
 Loaded: /usr/class/cs143/lib/trap.handler
+<<<<<<< HEAD:usout
 17141611714163171416511714161171416317141653117141611714163171416511714161171416317141653171416117141631714165171416COOL program successfully executed
 Stats -- #instructions : 47577
          #reads : 10264  #writes 7119  #branches 10516  #other 19678
+=======
+<<<<<<< HEAD:usout
+GenGC initialized.
+17141611714163171416511714161171416317141653117141611714163171416511714161171416317141653171416117141631714165171416COOL program successfully executed
+Stats -- #instructions : 47604
+         #reads : 10265  #writes 7130  #branches 10518  #other 19691
+=======
+Abort called from class Main
+Stats -- #instructions : 133620
+         #reads : 28905  #writes 17041  #branches 29545  #other 58129
+>>>>>>> 9981273dd9f17ec6e1cd933a8a4fd100eca40b28:usout
+>>>>>>> 3a010b0a57bef5c89f30e45269d6e404afd3980d:usout

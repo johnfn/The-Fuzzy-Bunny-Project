@@ -1358,6 +1358,11 @@ void emit_loadstore_var(char *id, ostream &s, int type){
             emit_load(ACC, res.second, SELF, s);
         } else { //type == STORETYPE
             emit_store(ACC, res.second, SELF, s);
+            //GC
+            if(cgen_Memmgr != 0){
+                emit_addiu(A1, SELF, res.second, s);
+                emit_jal("_GenGC_Assign", s);
+            }
         }
 
     } else {
