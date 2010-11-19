@@ -235,10 +235,10 @@ class LetTest inherits Problem {
   answer() : Object { 34 };
 };
 
-class A              { method() : Int {1}; };
+class A  inherits IO { method() : Int {1}; };
 class B1 inherits A  { method() : Int {2}; };
 class B2 inherits A  { method() : Int {3}; };
-class C  inherits B1 { method() : Int {4}; };
+class C  inherits B1 { method() : Int { { out_string("B1!!!") ;4;} }; };
 class D  inherits C  { method() : Int {5}; };
 
 class CaseTest inherits Problem {
@@ -250,21 +250,32 @@ class CaseTest inherits Problem {
 
   solve() : Object {{
     c <- new C;
-    a <- 10 * a + case c of x : A => x.method();
+    out_string("Starting cases\n");
+    a <- 0;
+    out_int(a);
+    out_string("\n");
+    a <- case c of x : A => x.method();
                             x : B2 => x.method();
-                            x : B1 => x.method();
+                            x : B1 => { out_int(x.method());
+                                        x.method(); };
                   esac;
+    out_int(a);
+    out_string("\n");
     c <- new D;
-    a <- 10 * a + case c of x : Object => 9;
+    a <- 10 * case c of x : Object => 9;
                             x : C => x.method();
                             x : D => x.method();
                   esac;
+    out_int(a);
+    out_string("\n");
 
     c <- new Int;
     a <- 10 * a + case c of x : Object => 9;
                             x : A => x.method();
                             x : String => 8;
                   esac;
+    out_int(a);
+    out_string("\n");
 
     c <- new A;
     a <- 10 * a + case c of x : A => {
@@ -274,6 +285,8 @@ class CaseTest inherits Problem {
                               };
                             };
                   esac;
+    out_int(a);
+    out_string("\n");
   }};
 
   answer() : Object { 4593 };

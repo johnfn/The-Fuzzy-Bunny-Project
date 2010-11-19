@@ -97,18 +97,6 @@ Class Cons inherits BookList {
     a : Book; 
     print_list() : Object {
         {
-            -- out_string("wjhat");
-            -- xcar alone doesn't work, Article
-            -- out_string(xcar);
-            -- xcar.print();
-            
-            --a <- new Article;
-            
-           out_string(xcar.type_name());
-            
-            case xcar.print() of
-                dummy : Article => out_string("- dynamic type was Article -\n");
-            esac;
             5;
         }
     };
@@ -121,7 +109,7 @@ Class Nil inherits BookList {
 };
 
 
-Class Main {
+Class Main inherits IO{
 
     books : BookList;
 
@@ -138,6 +126,7 @@ Class Main {
                 {
                     books <- (new Nil).cons(a_book).cons(an_article);
                     books.print_list();
+                    out_string("SOMETHING HERE \n");
                 }
             )  -- end let an_article
         )  -- end let a_book
