@@ -1,0 +1,6 @@
+7,8c7,8
+< Stats -- #instructions : 47577
+<          #reads : 10264  #writes 7119  #branches 10516  #other 19678
+---
+> Stats -- #instructions : 31321
+>          #reads : 7361  #writes 5027  #branches 6612  #other 12321
