@@ -23,7 +23,7 @@ FILE=$1
 fi
 
 rm them.s
-./lexer $FILE | ./parser | ./semant | ./cgen_soln > them.s
+./lexer $FILE | ./parser | ./semant | ./cgen_soln -g -t > them.s
 rm us.s
 ./lexer $FILE | ./parser | ./semant | ./cgen -g -t > us.s
 if [ $OPTION = "-us" ] 
