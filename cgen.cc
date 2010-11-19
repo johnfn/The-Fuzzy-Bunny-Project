@@ -1124,16 +1124,7 @@ void CgenClassTable::code_init(CgenNodeP obj){
             int offset = attrsAbove[obj->name] + featuresSeen + 3;
             ++featuresSeen;
             
-            //If there's no init for a non-basic class, emit nothing, 
-            //void is the default value of the object layout? FIXED
-    /*        
-            if(isNoExpr && a->type_decl != Int &&
-                        a->type_decl != Str &&
-                        a->type_decl != Bool){
-            
-            }else{ */
-                emit_store(ACC, offset, SELF, str);
-           /* } */
+            emit_store(ACC, offset, SELF, str);
         }
     }
 
@@ -1239,9 +1230,9 @@ void CgenClassTable::code_method(CgenNodeP obj){
                 //MARK: "FIXTHIS"
                 method_class *method = (method_class*) features->nth(i); 
                 //Add all arguments into the scope.
-                for (int j=method->formals->len()-1; j>=0;j--){ //FIXED
+                for (int j=method->formals->len()-1; j>=0;j--){ //FIXED???
                     formal_class *formal = (formal_class *)method->formals->nth(j);
-                    pair<bool, int>* p = new pair<bool, int>(false, 3 + j); //Pretty sure this is right
+                    pair<bool, int>* p = new pair<bool, int>(false, 3 + method->formals->len() - j - 1); 
                     variableOffsets.addid(formal->name->get_string(), p); 
                     variableTypes.addid(formal->name->get_string(), 
                                        &formal->type_decl);
@@ -1409,7 +1400,7 @@ void emit_check_acc_null(ostream &s){
  */
 void assign_class::code(ostream &s) {
     expr->code(s); //result stored in ACC
-    emit_jal("Object.copy", s); //copy 
+    //emit_jal("Object.copy", s); //copy 
     emit_store_variable(name->get_string(), s);
 }
 
