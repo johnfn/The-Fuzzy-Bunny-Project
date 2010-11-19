@@ -1408,6 +1408,7 @@ void assign_class::code(ostream &s) {
 int lookupMethod(Symbol classname, Symbol name){
     vector<pair<string, string> > vect = *symToNode[classname];
     for (int i=0;i< (int)vect.size(); i++){
+        PRINT(vect[i].second);
         if (vect[i].second == name->get_string()){
             return i;
         }
@@ -1426,13 +1427,21 @@ void static_dispatch_class::code(ostream &s) {
     expr->code(s);
     
     emit_check_acc_null(s);
+    
+    stringstream ss;
+    ss << type_name << "_dispTab";
 
-    emit_load(T1, 2, ACC, s);
+    emit_load_address(T1, ss.str().c_str(), s);
+    
+    PRINT("STATIC");
+
+    PRINT(type_name);
     int offset = lookupMethod(type_name, name);
 
     emit_load(T1, offset, T1, s);
     emit_jalr(T1, s);
 }
+
 void dispatch_class::code(ostream &s) {
     
     //TODO Aiken said that this was tricky because I think you evaluate the object last.
