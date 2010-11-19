@@ -14,7 +14,6 @@ Class Book inherits IO {
 
     print() : Book {
         {
-            out_string("bookie");
             out_string("title:      ").out_string(title).out_string("\n");
             out_string("author:     ").out_string(author).out_string("\n");
             self;
@@ -26,7 +25,7 @@ Class Article inherits Book {
     per_title : String;
 
     initArticle(title_p : String, author_p : String,
-		per_title_p : String) : Article {
+        per_title_p : String) : Article {
         {
             initBook(title_p, author_p);
             per_title <- per_title_p;
@@ -36,8 +35,7 @@ Class Article inherits Book {
 
     print() : Book {
         {
-            out_string("not bookie");
-	        self@Book.print();
+        self@Book.print();
             out_string("periodical:  ").out_string(per_title).out_string("\n");
             self;
         }
@@ -91,18 +89,14 @@ Class Cons inherits BookList {
     car() : Book { xcar };
 
     cdr() : BookList { xcdr };
-    a : Book;
+    
     print_list() : Object {
         {
-            out_string("wjhat");
-            -- xcar alone doesn't work, Article
-            a <- new Article;
-            case xcar of
+            case xcar.print() of
                 dummy : Book => out_string("- dynamic type was Book -\n");
                 dummy : Article => out_string("- dynamic type was Article -\n");
             esac;
-            --xcdr.print_list();
-            5;
+            xcdr.print_list();
         }
     };
 };
@@ -136,3 +130,4 @@ Class Main {
         )  -- end let a_book
     };
 };
+

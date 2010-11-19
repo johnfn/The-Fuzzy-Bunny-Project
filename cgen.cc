@@ -927,10 +927,35 @@ Symbol curClass = Object;
 
 void CgenClassTable::code_nameTab(CgenNodeP obj){
 
-    str << WORD;
-    stringtable.lookup_string(obj->name->get_string())->code_ref(str);
-    str << endl;
+    //classTagLookup[obj->name]; 
 
+    //Need to reverse this, starting at 0 and going up until we've found them all.
+
+    map<int, Symbol> reverseLookup;
+
+    map<Symbol, int>::iterator it;
+
+    int numSymbols = 0;
+    for (it = classTagLookup.begin(); it != classTagLookup.end(); it++){
+        ++numSymbols;
+        reverseLookup[it->second] = it->first;
+    }
+
+    int j=0;
+    for (int i=0;j<numSymbols;i++){
+        if (reverseLookup.count(i) > 0){
+            j++;
+            str << WORD;
+            stringtable.lookup_string(reverseLookup[i]->get_string())->code_ref(str);
+            str << endl;
+        } else {
+            str << WORD;
+            stringtable.lookup_string("")->code_ref(str);
+            str << endl;
+        }
+    }
+
+    /* 
     List<CgenNode> *children = obj->get_children();
 
     if (!children) return; //TODO
@@ -941,6 +966,7 @@ void CgenClassTable::code_nameTab(CgenNodeP obj){
         //s.push(children->hd());
         code_nameTab(children->hd());
     }
+  */
 }
                                                         //pair< class, method > 
 void CgenClassTable::code_objTab(CgenNodeP obj){
@@ -1798,6 +1824,18 @@ void new__class::code(ostream &s) {
 }
 
 void isvoid_class::code(ostream &s) {
+    int truelabel = label_count++;
+    int donelabel = label_count++;
+
+    emit_beq(ACC, ZERO, truelabel, s); //branch if false
+    //load false into acc
+    emit_load_false(s);
+    emit_branch(donelabel, s); //go to end now.
+    emit_label_def(truelabel, s);
+    //load true into acc
+    emit_load_true(s);
+    emit_label_def(donelabel, s);
+
 }
 
 void no_expr_class::code(ostream &s) {
