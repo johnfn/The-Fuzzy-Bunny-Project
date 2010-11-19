@@ -1405,7 +1405,7 @@ void emit_check_acc_null(ostream &s){
  */
 void assign_class::code(ostream &s) {
     expr->code(s); //result stored in ACC
-    //emit_jal("Object.copy", s); //copy 
+    emit_jal("Object.copy", s); //copy 
     emit_store_variable(name->get_string(), s);
 }
 
@@ -1708,6 +1708,7 @@ void divide_class::code(ostream &s) {
 void neg_class::code(ostream &s) {
     e1->code(s);
     emit_load(S1, INTVAL_OFFSET, ACC, s);
+    emit_jal("Object.copy", s); //copy 2nd object to return
     emit_sub(S1, ZERO, S1, s);
     emit_store(S1, INTVAL_OFFSET, ACC, s);
 }
@@ -1811,11 +1812,25 @@ void bool_const_class::code(ostream& s)
 }
 
 void new__class::code(ostream &s) {
-    string prototyp = type_name->get_string(); //I see your protObj "cleverness" and raise you a pun
-    prototyp += PROTOBJ_SUFFIX;
+    string prototyp; //I see your protObj "cleverness" and raise you a pun
+    string classtyp; 
 
-    string classtyp = type_name->get_string();
-    classtyp += CLASSINIT_SUFFIX;
+    if (type_name == SELF_TYPE) { 
+        prototyp = curObj->get_string();
+        prototyp += PROTOBJ_SUFFIX;
+
+
+        classtyp = curObj->get_string();
+        classtyp += CLASSINIT_SUFFIX;
+    } else { 
+        prototyp = type_name->get_string(); 
+        
+
+        prototyp += PROTOBJ_SUFFIX;
+
+        classtyp = type_name->get_string();
+        classtyp += CLASSINIT_SUFFIX;
+    }
 
     emit_load_address(ACC, prototyp.c_str(), s);
     emit_jal("Object.copy", s);
@@ -1826,7 +1841,7 @@ void isvoid_class::code(ostream &s) {
     int truelabel = label_count++;
     int donelabel = label_count++;
 
-    emit_beq(ACC, ZERO, truelabel, s); //branch if false
+    emit_beqz(ACC, truelabel, s); //branch if false
     //load false into acc
     emit_load_false(s);
     emit_branch(donelabel, s); //go to end now.
