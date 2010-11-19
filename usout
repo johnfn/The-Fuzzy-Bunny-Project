@@ -3,6 +3,15 @@ Copyright 1990-2003 by James R. Larus (larus@cs.wisc.edu).
 All Rights Reserved.
 See the file README for a full copyright notice.
 Loaded: /usr/class/cs143/lib/trap.handler
+<<<<<<< HEAD:usout
 wjhattest.cl:31Match on void in case statement.
 Stats -- #instructions : 628
          #reads : 112  #writes 104  #branches 126  #other 286
+=======
+Welcome to the Game of Life.
+There are many initial states to choose from. 
+
+
+Would you like to choose a background pattern? 
+Please use lowercase y or n for your answer [n]: 
+>>>>>>> 7b1d0fa75478e0fc95e83377cc216ee8eb83fa44:usout
